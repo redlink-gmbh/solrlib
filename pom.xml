@@ -16,6 +16,18 @@
         <relativePath/>
     </parent>
 
+    <properties>
+        <redlink-nlp.version>1.1.2-SNAPSHOT</redlink-nlp.version>
+        <solr.version>6.2.1</solr.version>
+    </properties>
+
+    <modules>
+        <module>api</module>
+
+        <module>embedded</module>
+        <module>cloud</module>
+    </modules>
+
     <scm>
         <connection>scm:git:https://bitbucket.org/redlinkgmbh/solrlib.git</connection>
         <developerConnection>scm:git:git@bitbucket.org:redlinkgmbh/solrlib.git</developerConnection>
@@ -29,6 +41,21 @@
             <url>https://repo.redlink.io/mvn/content/groups/private/</url>
         </repository>
     </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-solrj</artifactId>
+                <version>${solr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-core</artifactId>
+                <version>${solr.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
