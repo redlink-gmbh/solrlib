@@ -12,12 +12,12 @@
     <parent>
         <groupId>io.redlink</groupId>
         <artifactId>private-parent</artifactId>
-        <version>1</version>
+        <version>3-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
     <properties>
-        <redlink-nlp.version>1.1.2-SNAPSHOT</redlink-nlp.version>
+        <redlink-nlp.version>2.0.0-SNAPSHOT</redlink-nlp.version>
         <solr.version>6.2.1</solr.version>
     </properties>
 
@@ -26,6 +26,8 @@
 
         <module>embedded</module>
         <module>cloud</module>
+
+        <module>spring-boot</module>
     </modules>
 
     <scm>
@@ -85,17 +87,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <pushChanges>false</pushChanges>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <tagNameFormat>${project.artifactId}-@{project.version}</tagNameFormat>
-                    <localCheckout>true</localCheckout>
-                    <connectionUrl>scm:git:file://${project.basedir}/</connectionUrl>
-                    <indentSize>4</indentSize>
-                </configuration>
             </plugin>
         </plugins>
     </build>

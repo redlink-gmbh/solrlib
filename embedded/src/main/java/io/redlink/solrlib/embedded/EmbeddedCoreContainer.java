@@ -90,9 +90,10 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
 
     @Override
     public final void shutdown() {
-        if (coreContainer != null) {
-            coreContainer.shutdown();
-            coreContainer = null;
+        final CoreContainer cc = this.coreContainer;
+        if (cc != null) {
+            cc.shutdown();
+            this.coreContainer = null;
         }
     }
 

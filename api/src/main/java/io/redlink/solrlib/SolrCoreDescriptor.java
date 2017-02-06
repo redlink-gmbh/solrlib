@@ -9,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -32,6 +34,7 @@ public abstract class SolrCoreDescriptor {
     public abstract void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException;
 
     protected final void unpackSolrCoreDir(Path solrCoreBundle, Path solrCoreDir) throws IOException {
+        log.debug("Unpacking SolrCore directory {} to {}", solrCoreBundle, solrCoreDir);
         final Optional<Path> solrXml =
                 Files.find(solrCoreBundle, Integer.MAX_VALUE,
                         (p, a) -> Files.isRegularFile(p)
@@ -51,6 +54,7 @@ public abstract class SolrCoreDescriptor {
         if ("application/zip".equals(contentType) ||
                 //fallback if Files.probeContentType(..) fails (such as on Max OS X)
                 (contentType == null && StringUtils.endsWithAny(solrCoreBundle.getFileName().toString(), ".zip", ".jar"))) {
+            log.debug("Unpacking SolrCore zip {} to {}", solrCoreBundle, solrHome);
             try (FileSystem fs = FileSystems.newFileSystem(solrCoreBundle, getClass().getClassLoader())) {
                 unpackSolrCoreDir(fs.getPath("/"), solrHome);
             }

@@ -6,7 +6,6 @@ package io.redlink.solrlib.embedded;
 import java.nio.file.Path;
 
 /**
- * Created by jakob on 25.01.17.
  */
 public class EmbeddedCoreContainerConfiguration {
     private Path home;

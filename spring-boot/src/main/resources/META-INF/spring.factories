@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.redlink.solrlib.spring.boot.autoconfigure.SolrLibAutoconfiguration
