@@ -31,7 +31,7 @@ import java.nio.file.Files;
 /**
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = SolrEmbeddedIT.EmbeddedConfiguration.class)
 @ActiveProfiles("embedded")
 @EnableAutoConfiguration
 public class SolrEmbeddedIT {

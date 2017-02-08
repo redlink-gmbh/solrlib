@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>solrlib-cloud</artifactId>
+    <name>SolrLib :: SolrCloud Backend</name>
 
     <dependencies>
         <dependency>

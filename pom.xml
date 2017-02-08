@@ -9,6 +9,9 @@
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>SolrLib</name>
+    <description>A convenience library for Solr/SolrJ</description>
+
     <parent>
         <groupId>io.redlink</groupId>
         <artifactId>private-parent</artifactId>

@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>solrlib-embedded</artifactId>
+    <name>SolrLib :: Embedded Solr Backend</name>
 
     <dependencies>
         <dependency>

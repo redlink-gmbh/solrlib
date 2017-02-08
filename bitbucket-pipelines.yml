@@ -5,7 +5,7 @@ pipelines:
     - step:
         script:
           - git remote rename origin upstream
-          - mvn -V -B -s .ci/settings.xml clean install
+          - mvn -V -B -s .ci/settings.xml clean install -DskipITs
           - git remote rename upstream origin
   branches:
     master:

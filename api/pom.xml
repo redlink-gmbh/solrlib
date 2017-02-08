@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>solrlib-api</artifactId>
+    <name>SolrLib :: API</name>
 
     <dependencies>
         <dependency>
