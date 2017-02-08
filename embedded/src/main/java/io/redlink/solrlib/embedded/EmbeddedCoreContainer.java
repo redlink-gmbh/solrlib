@@ -3,8 +3,10 @@
  */
 package io.redlink.solrlib.embedded;
 
+import com.google.common.base.Preconditions;
 import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
@@ -14,7 +16,10 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -35,14 +40,14 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
                                  EmbeddedCoreContainerConfiguration configuration,
                                  ExecutorService executorService) {
         super(coreDescriptors, executorService);
+        Preconditions.checkArgument(configuration.getHome() != null, "solr-home not set!");
         config = configuration;
     }
 
     @Override
     protected void init() throws IOException {
-        if (coreContainer != null) {
-            throw new IllegalStateException("Already initialized!");
-        }
+        Preconditions.checkState(Objects.isNull(coreContainer), "Already initialized!");
+
         final Path home = config.getHome().toAbsolutePath();
         final Path lib = home.resolve("lib");
         Files.createDirectories(home);
@@ -99,6 +104,8 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
 
     @Override
     protected SolrClient createSolrClient(String coreName) {
+        Preconditions.checkState(Objects.nonNull(coreContainer), "CoreContainer not initialized!");
+        Preconditions.checkArgument(StringUtils.isNotBlank(coreName));
         return new EmbeddedSolrServer(coreContainer, coreName) {
             @Override
             public void close() throws IOException {
