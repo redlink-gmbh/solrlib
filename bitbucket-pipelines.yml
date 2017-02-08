@@ -12,7 +12,7 @@ pipelines:
       - step:
           script:
             - git remote rename origin upstream
-            - mvn -V -B -s .ci/settings.xml clean install
+            - mvn -V -B -s .ci/settings.xml clean install -DskipITs
             - mvn -B -s .ci/settings.xml deploy -DskipTests -DskipITs
             - git remote rename upstream origin
   tags:
