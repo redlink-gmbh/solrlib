@@ -55,5 +55,62 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>process-test-classes</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>solr.zk.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.github.borisnaguet</groupId>
+                <artifactId>solr-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-solr-cloud</id>
+                        <goals><goal>start-solrcloud</goal></goals>
+                        <phase>pre-integration-test</phase>
+                    </execution>
+                    <execution>
+                        <id>stop-solr-cloud</id>
+                        <goals><goal>stop-solrcloud</goal></goals>
+                        <phase>post-integration-test</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <createCols>false</createCols>
+                    <numServers>1</numServers>
+                    <!--suppress MavenModelInspection -->
+                    <zkPort>${solr.zk.port}</zkPort>
+
+                    <!-- clean up afterwards -->
+                    <deleteConf>true</deleteConf>
+                    <deleteData>true</deleteData>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <!--suppress MavenModelInspection -->
+                        <solr.zk.port>${solr.zk.port}/</solr.zk.port>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

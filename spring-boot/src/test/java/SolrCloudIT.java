@@ -6,26 +6,24 @@ import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import io.redlink.solrlib.cloud.SolrCloudConnector;
 import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibProperties;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.request.CollectionAdminRequest;
-import org.apache.solr.client.solrj.request.ConfigSetAdminRequest;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.hamcrest.Matchers;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.annotation.PreDestroy;
-import java.io.IOException;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  */
@@ -36,7 +34,7 @@ import java.util.Set;
 )
 @ActiveProfiles("cloud")
 @EnableAutoConfiguration
-public class SolrCloudTest {
+public class SolrCloudIT {
 
     @Autowired
     private SolrCoreContainer coreContainer;
@@ -44,10 +42,14 @@ public class SolrCloudTest {
     @Autowired
     private SolrLibProperties solrLibProperties;
 
+    @Autowired
+    @Qualifier(TestCoreDesciptorsConfiguration.CORE_NAME)
+    private SolrCoreDescriptor solrCoreDescriptor;
+
     @Before
     public void setUp() throws Exception {
         try (CloudSolrClient client = new CloudSolrClient.Builder().withZkHost(solrLibProperties.getZkConnection()).build()) {
-            client.connect();
+            client.connect(250, TimeUnit.MILLISECONDS);
             Assume.assumeTrue(client.getZkStateReader().getZkClient().isConnected());
         } catch (final Throwable t) {
             Assume.assumeNoException(t);
@@ -65,8 +67,17 @@ public class SolrCloudTest {
     }
 
     @Test
-    public void testCoreDeployment() throws Exception {
-        SolrClient foo = coreContainer.getSolrClient("foo");
+    public void testCoreDeployment_1() throws Exception {
+        SolrClient foo = coreContainer.getSolrClient(TestCoreDesciptorsConfiguration.CORE_NAME);
+        Assert.assertNotNull(foo);
+
+        SolrPingResponse pingResponse = foo.ping();
+        Assert.assertEquals(0, pingResponse.getStatus());
+    }
+
+    @Test
+    public void testCoreDeployment_2() throws Exception {
+        SolrClient foo = coreContainer.getSolrClient(solrCoreDescriptor);
         Assert.assertNotNull(foo);
 
         SolrPingResponse pingResponse = foo.ping();
