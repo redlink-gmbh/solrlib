@@ -16,10 +16,13 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
 
     private final String coreName;
     private final Path coreBundle;
+    private int numShards, replicationFactor;
 
     public SimpleCoreDescriptor(String coreName, Path coreBundle) {
         this.coreName = coreName;
         this.coreBundle = coreBundle;
+        numShards = super.getNumShards();
+        replicationFactor = super.getReplicationFactor();
     }
 
     @Override
@@ -34,6 +37,26 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
         } else {
             unpackSolrCoreZip(coreBundle, coreDir);
         }
+    }
+
+    @Override
+    public int getNumShards() {
+        return numShards;
+    }
+
+    @Override
+    public int getReplicationFactor() {
+        return replicationFactor;
+    }
+
+    public SimpleCoreDescriptor setNumShards(int numShards) {
+        this.numShards = numShards;
+        return this;
+    }
+
+    public SimpleCoreDescriptor setReplicationFactor(int replicationFactor) {
+        this.replicationFactor = replicationFactor;
+        return this;
     }
 
     /**
