@@ -16,7 +16,6 @@ import org.apache.solr.common.util.NamedList;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 public class SolrCloudConnector extends SolrCoreContainer {
 
     private final SolrCloudConnectorConfiguration config;
+    private final String prefix;
 
     public SolrCloudConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrCloudConnectorConfiguration configuration) {
         this(coreDescriptors, configuration, null);
@@ -34,20 +34,19 @@ public class SolrCloudConnector extends SolrCoreContainer {
         super(coreDescriptors, executorService);
 
         this.config = configuration;
+        this.prefix = StringUtils.defaultString(configuration.getPrefix());
     }
 
     @Override
     protected void init() throws IOException {
-        final String prefix = StringUtils.isNotBlank(config.getPrefix())?config.getPrefix()+"_":"";
         final Path sharedLibs = Files.createTempDirectory("solrSharedLibs");
         try (CloudSolrClient client = createSolrClient()) {
-            NamedList<Object> list = client.request(CollectionAdminRequest.listCollections());
-            List<String> existingCollections = (List<String>) list.get("collections");
-//            List<String> existingCollections = Collections.emptyList();
+            final NamedList<Object> list = client.request(CollectionAdminRequest.listCollections());
+            final List<String> existingCollections = (List<String>) list.get("collections");
 
             for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
                 final String coreName = coreDescriptor.getCoreName();
-                final String remoteName = prefix + coreName;
+                final String remoteName = createRemoteName(coreName);
                 if (availableCores.contains(coreName)) {
                     log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
                     continue;
@@ -72,14 +71,17 @@ public class SolrCloudConnector extends SolrCoreContainer {
                         );
                         log.debug("CoreAdminResponse: {}", response);
                     }
+                    availableCores.add(coreName);
                 } catch (SolrServerException e) {
                     log.debug("Initializing core {} ({}) failed: {}", coreName, remoteName, e.getMessage());
                     throw new IOException(String.format("Initializing collection %s (%s) failed", coreName, remoteName), e);
                 } finally {
                     PathUtils.deleteRecursive(tmp);
                 }
-                availableCores.add(coreName);
             }
+            log.info("Initialized {} collections in Solr-Cloud {}: {}", availableCores.size(), config.getZkConnection(), availableCores);
+        } catch (IOException e) {
+            throw e;
         } catch (SolrServerException e) {
             log.error("Could not list existing collections: {}", e.getMessage(), e);
             throw new IOException("Could not list existing collections", e);
@@ -91,7 +93,11 @@ public class SolrCloudConnector extends SolrCoreContainer {
         }
     }
 
-    private CloudSolrClient createSolrClient() {
+    protected String createRemoteName(String coreName) {
+        return prefix + coreName;
+    }
+
+    protected CloudSolrClient createSolrClient() {
         return new CloudSolrClient.Builder()
                 .withZkHost(config.getZkConnection())
                 .build();
@@ -100,7 +106,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
     @Override
     protected SolrClient createSolrClient(String coreName) {
         CloudSolrClient solrClient = createSolrClient();
-        solrClient.setDefaultCollection(coreName);
+        solrClient.setDefaultCollection(createRemoteName(coreName));
         return solrClient;
     }
 }
