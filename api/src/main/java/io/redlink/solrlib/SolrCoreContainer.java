@@ -65,13 +65,18 @@ public abstract class SolrCoreContainer {
                         }
                     });
         } else {
-            log.warn("SolrCoreContainer was already initialized, ignoring call. You might have a flaw in your implementation flow...");
+            if (log.isDebugEnabled()) {
+                log.warn("SolrCoreContainer was already initialized, ignoring call. You might have a flaw in your implementation flow...");
+                log.debug("Double initialization call, not an error!", new Throwable("SolrCoreContainer already initialized"));
+            } else {
+                log.warn("SolrCoreContainer was already initialized, ignoring call.");
+            }
         }
     }
 
     protected abstract void init() throws IOException;
 
-    public void shutdown() {
+    public void shutdown() throws IOException {
 
     }
 
