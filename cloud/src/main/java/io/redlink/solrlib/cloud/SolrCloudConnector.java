@@ -38,7 +38,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
     }
 
     @Override
-    protected void init(ExecutorService executorService) throws IOException {
+    protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         final Path sharedLibs = Files.createTempDirectory("solrSharedLibs");
         try (CloudSolrClient client = createSolrClient()) {
             final NamedList<Object> list = client.request(CollectionAdminRequest.listCollections());
@@ -63,7 +63,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
 
                     if (!existingCollections.contains(remoteName)) {
                         // TODO: Check and log the response
-                        NamedList<Object> response = client.request(CollectionAdminRequest
+                        final NamedList<Object> response = client.request(CollectionAdminRequest
                                         .createCollection(remoteName, remoteName,
                                                 Math.max(1, coreDescriptor.getNumShards()),
                                                 Math.max(2, coreDescriptor.getReplicationFactor())
@@ -74,6 +74,9 @@ public class SolrCloudConnector extends SolrCoreContainer {
                         scheduleCoreInit(executorService, coreDescriptor, true);
                     } else {
                         log.debug("Collection {} already exists in SolrCloud '{}' as {}", coreName, config.getZkConnection(), remoteName);
+                        // TODO: Check and log the response
+                        final NamedList<Object> response = client.request(CollectionAdminRequest.reloadCollection(remoteName));
+                        log.debug("Reloaded Collection {}, CoreAdminResponse: {}", coreName, response);
                         scheduleCoreInit(executorService, coreDescriptor, false);
                     }
                     availableCores.put(coreName, coreDescriptor);

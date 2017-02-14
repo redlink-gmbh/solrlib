@@ -49,7 +49,7 @@ public abstract class SolrCoreContainer {
                     .execute(() -> {
                         try {
                             init(executorService);
-                        } catch (IOException e) {
+                        } catch (IOException | SolrServerException e) {
                             if (log.isDebugEnabled()) {
                                 log.error("Error while initializing SolrCoreContainer: {}", e.getMessage(), e);
                             } else {
@@ -82,7 +82,7 @@ public abstract class SolrCoreContainer {
         }
     }
 
-    protected abstract void init(ExecutorService executorService) throws IOException;
+    protected abstract void init(ExecutorService executorService) throws IOException, SolrServerException;
 
     protected void scheduleCoreInit(ExecutorService executorService, SolrCoreDescriptor coreDescriptor, boolean newCore) {
         final CountDownLatch coreLatch = coreInitialized.computeIfAbsent(coreDescriptor.getCoreName(), s -> new CountDownLatch(1));
