@@ -5,6 +5,8 @@ package io.redlink.solrlib;
 
 import io.redlink.utils.PathUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +35,13 @@ public abstract class SolrCoreDescriptor {
 
     public abstract void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException;
 
+    public void onCoreCreated(SolrClient solrClient) throws IOException, SolrServerException {}
+
+    public void onCoreStarted(SolrClient solrClient) throws IOException, SolrServerException {}
+
     protected final void unpackSolrCoreDir(Path solrCoreBundle, Path solrCoreDir) throws IOException {
         log.debug("Unpacking SolrCore directory {} to {}", solrCoreBundle, solrCoreDir);
-        final Optional<Path> solrXml =
+        final Optional<Path> coreProperties =
                 Files.find(solrCoreBundle, Integer.MAX_VALUE,
                         (p, a) -> Files.isRegularFile(p)
                                 && Files.isReadable(p)
@@ -43,7 +49,7 @@ public abstract class SolrCoreDescriptor {
                 )
                         .sorted((a,b)-> Integer.compare(a.getNameCount(), b.getNameCount()))
                         .findFirst();
-        final Path sourceDir = solrXml.orElseThrow(() -> new IllegalArgumentException("Invalid solrCoreBundle '" + solrCoreBundle + "': no solr.xml found"))
+        final Path sourceDir = coreProperties.orElseThrow(() -> new IllegalArgumentException("Invalid solrCoreBundle '" + solrCoreBundle + "': no core.properties found"))
                 .getParent();
 
         PathUtils.copyRecursive(sourceDir, solrCoreDir);

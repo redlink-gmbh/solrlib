@@ -9,7 +9,10 @@ import io.redlink.solrlib.SolrCoreDescriptor;
 import io.redlink.utils.PathUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 
 import java.io.IOException;
@@ -41,13 +44,12 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
                                  EmbeddedCoreContainerConfiguration configuration,
                                  ExecutorService executorService) {
         super(coreDescriptors, executorService);
-        Preconditions.checkArgument(configuration.getHome() != null, "solr-home not set!");
         deleteOnShutdown = configuration.isDeleteOnShutdown();
         solrHome = configuration.getHome();
     }
 
     @Override
-    protected void init() throws IOException {
+    protected synchronized void init(ExecutorService executorService) throws IOException {
         Preconditions.checkState(Objects.isNull(coreContainer), "Already initialized!");
 
         if (solrHome == null) {
@@ -74,7 +76,7 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
 
         for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
             final String coreName = coreDescriptor.getCoreName();
-            if (availableCores.contains(coreName)) {
+            if (availableCores.containsKey(coreName)) {
                 log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
                 continue;
             }
@@ -84,8 +86,12 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
 
             final Properties coreProperties = new Properties();
             final Path corePropertiesFile = coreDir.resolve("core.properties");
-            if (Files.exists(corePropertiesFile))
+            if (Files.exists(corePropertiesFile)) {
                 coreProperties.load(Files.newInputStream(corePropertiesFile, StandardOpenOption.CREATE));
+                log.debug("core.properties for {} found, updating", coreName);
+            } else {
+                log.debug("Creating new core {} in {}", coreName, coreDir);
+            }
             coreProperties.setProperty("name", coreName);
             coreProperties.store(Files.newOutputStream(corePropertiesFile), null);
 
@@ -94,11 +100,26 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
                         coreDescriptor.getNumShards(), coreDescriptor.getReplicationFactor());
             }
 
-            availableCores.add(coreName);
+            availableCores.put(coreName, coreDescriptor);
         }
 
         log.info("Starting {} in solr-home '{}'", getClass().getSimpleName(), solrHome);
         coreContainer = CoreContainer.createAndLoad(solrHome, solrXml);
+
+        availableCores.values().forEach(coreDescriptor -> {
+            final String coreName = coreDescriptor.getCoreName();
+            try (SolrClient solrClient = createSolrClient(coreName)) {
+                final Object lastModified = ((NamedList) CoreAdminRequest.getStatus(coreName, solrClient).getCoreStatus(coreName).get("index")).get("lastModified");
+                // lastModified is null if there was never a update
+                scheduleCoreInit(executorService, coreDescriptor, lastModified == null);
+            } catch (SolrServerException | IOException e) {
+                if (log.isDebugEnabled()) {
+                    log.error("Error initializing core {}", coreName, e);
+                }
+                //noinspection ThrowableResultOfMethodCallIgnored
+                coreInitException.put(coreName, e);
+            }
+        });
     }
 
     @Override
@@ -130,6 +151,14 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
                 // nop;
             }
         };
+    }
+
+    /**
+     * For testing
+     */
+    @Override
+    protected void scheduleCoreInit(ExecutorService executorService, SolrCoreDescriptor coreDescriptor, boolean newCore) {
+        super.scheduleCoreInit(executorService, coreDescriptor, newCore);
     }
 
     public CoreContainer getCoreContainer() {

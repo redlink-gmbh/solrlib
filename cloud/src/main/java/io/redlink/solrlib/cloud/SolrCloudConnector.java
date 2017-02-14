@@ -38,16 +38,17 @@ public class SolrCloudConnector extends SolrCoreContainer {
     }
 
     @Override
-    protected void init() throws IOException {
+    protected void init(ExecutorService executorService) throws IOException {
         final Path sharedLibs = Files.createTempDirectory("solrSharedLibs");
         try (CloudSolrClient client = createSolrClient()) {
             final NamedList<Object> list = client.request(CollectionAdminRequest.listCollections());
+            @SuppressWarnings("unchecked")
             final List<String> existingCollections = (List<String>) list.get("collections");
 
             for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
                 final String coreName = coreDescriptor.getCoreName();
                 final String remoteName = createRemoteName(coreName);
-                if (availableCores.contains(coreName)) {
+                if (availableCores.containsKey(coreName)) {
                     log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
                     continue;
                 } else {
@@ -69,9 +70,13 @@ public class SolrCloudConnector extends SolrCoreContainer {
                                         )
                                         .setMaxShardsPerNode(config.getMaxShardsPerNode())
                         );
-                        log.debug("CoreAdminResponse: {}", response);
+                        log.debug("Created Collection {}, CoreAdminResponse: {}", coreName, response);
+                        scheduleCoreInit(executorService, coreDescriptor, true);
+                    } else {
+                        log.debug("Collection {} already exists in SolrCloud '{}' as {}", coreName, config.getZkConnection(), remoteName);
+                        scheduleCoreInit(executorService, coreDescriptor, false);
                     }
-                    availableCores.add(coreName);
+                    availableCores.put(coreName, coreDescriptor);
                 } catch (SolrServerException e) {
                     log.debug("Initializing core {} ({}) failed: {}", coreName, remoteName, e.getMessage());
                     throw new IOException(String.format("Initializing collection %s (%s) failed", coreName, remoteName), e);
