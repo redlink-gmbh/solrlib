@@ -16,6 +16,8 @@ import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,13 +89,17 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
             final Properties coreProperties = new Properties();
             final Path corePropertiesFile = coreDir.resolve("core.properties");
             if (Files.exists(corePropertiesFile)) {
-                coreProperties.load(Files.newInputStream(corePropertiesFile, StandardOpenOption.CREATE));
+                try (InputStream inStream = Files.newInputStream(corePropertiesFile, StandardOpenOption.CREATE)) {
+                    coreProperties.load(inStream);
+                }
                 log.debug("core.properties for {} found, updating", coreName);
             } else {
                 log.debug("Creating new core {} in {}", coreName, coreDir);
             }
             coreProperties.setProperty("name", coreName);
-            coreProperties.store(Files.newOutputStream(corePropertiesFile), null);
+            try (OutputStream outputStream = Files.newOutputStream(corePropertiesFile)) {
+                coreProperties.store(outputStream, null);
+            }
 
             if (coreDescriptor.getNumShards() > 1 || coreDescriptor.getReplicationFactor() > 1) {
                 log.warn("Deploying {} to EmbeddedCoreContainer, ignoring config of shards={},replication={}", coreName,
