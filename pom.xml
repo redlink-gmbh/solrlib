@@ -26,6 +26,7 @@
         <module>api</module>
 
         <module>embedded</module>
+        <module>standalone</module>
         <module>cloud</module>
 
         <module>spring-boot</module>

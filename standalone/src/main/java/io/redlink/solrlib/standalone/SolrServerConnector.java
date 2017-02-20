@@ -1,0 +1,116 @@
+/*
+ * Copyright (c) 2017 Redlink GmbH.
+ */
+package io.redlink.solrlib.standalone;
+
+import com.google.common.base.Preconditions;
+import io.redlink.solrlib.SolrCoreContainer;
+import io.redlink.solrlib.SolrCoreDescriptor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.CoreAdminRequest;
+import org.apache.solr.client.solrj.response.CoreAdminResponse;
+import org.apache.solr.common.util.NamedList;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * SolrServerConnector, a implementation of {@link SolrCoreContainer} using a standalone Solr-Server as backend.
+ * Direct access to {@code $SOLR_HOME} as well as access to the CoreAdminHandler is required.
+ */
+public class SolrServerConnector extends SolrCoreContainer {
+
+    private final SolrServerConnectorConfiguration configuration;
+    private final String prefix;
+    private final String solrBaseUrl;
+    private final AtomicBoolean initialized;
+
+    public SolrServerConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrServerConnectorConfiguration configuration) {
+        this(coreDescriptors, configuration, null);
+    }
+
+    public SolrServerConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrServerConnectorConfiguration configuration, ExecutorService executorService) {
+        super(coreDescriptors, executorService);
+        this.configuration = configuration;
+        prefix = StringUtils.defaultString(configuration.getPrefix());
+        solrBaseUrl = StringUtils.removeEnd(configuration.getSolrUrl(), "/");
+        initialized = new AtomicBoolean(false);
+    }
+
+    @Override
+    protected void init(ExecutorService executorService) throws IOException, SolrServerException {
+        Preconditions.checkState(initialized.compareAndSet(false, true));
+
+        final Path solrHome = configuration.getSolrHome();
+        Files.createDirectories(solrHome);
+        final Path libDir = solrHome.resolve("lib");
+
+        try (HttpSolrClient solrClient = new HttpSolrClient.Builder(solrBaseUrl).build()) {
+            for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
+                final String coreName = coreDescriptor.getCoreName();
+                if (availableCores.containsKey(coreName)) {
+                    log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
+                    continue;
+                }
+                final String remoteName = createRemoteName(coreName);
+
+                final Path coreHome = solrHome.resolve(remoteName);
+                coreDescriptor.initCoreDirectory(coreHome, libDir);
+
+                final Path corePropertiesFile = coreHome.resolve("core.properties");
+                // core.properties is created by the CreateCore-Command.
+                Files.deleteIfExists(corePropertiesFile);
+
+                if (coreDescriptor.getNumShards() > 1 || coreDescriptor.getReplicationFactor() > 1) {
+                    log.warn("Deploying {} to SolrServerConnector, ignoring config of shards={},replication={}", coreName,
+                            coreDescriptor.getNumShards(), coreDescriptor.getReplicationFactor());
+                }
+
+                // Create or reload the core
+                if (CoreAdminRequest.getStatus(remoteName, solrClient).getStartTime(remoteName) == null) {
+                    final CoreAdminResponse adminResponse = CoreAdminRequest.createCore(remoteName, coreHome.toAbsolutePath().toString(), solrClient);
+                } else {
+                    final CoreAdminResponse adminResponse = CoreAdminRequest.reloadCore(remoteName, solrClient);
+                }
+                // schedule client-side core init
+                if (findInNamedList(CoreAdminRequest.getStatus(remoteName, solrClient).getCoreStatus(remoteName),
+                        "index", "lastModified") == null) {
+                    scheduleCoreInit(executorService, coreDescriptor, true);
+                } else {
+                    scheduleCoreInit(executorService, coreDescriptor, false);
+                }
+
+                availableCores.put(coreName, coreDescriptor);
+            }
+        }
+    }
+
+    private Object findInNamedList(NamedList namedList, String... path) {
+        if (path.length < 1) return null;
+        final Object value = namedList.get(path[0]);
+        if (path.length == 1) return value;
+
+        final NamedList nested = value instanceof NamedList ? ((NamedList) value) : null;
+        if (nested != null) return findInNamedList(nested, Arrays.copyOfRange(path, 1, path.length));
+        return null;
+    }
+
+    protected String createRemoteName(String coreName) {
+        return prefix + coreName;
+    }
+
+
+    @Override
+    protected SolrClient createSolrClient(String coreName) {
+        return new HttpSolrClient.Builder(solrBaseUrl + StringUtils.prependIfMissing(createRemoteName(coreName), "/"))
+                .build();
+    }
+}
