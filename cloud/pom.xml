@@ -63,6 +63,19 @@
             <plugin>
                 <groupId>io.github.borisnaguet</groupId>
                 <artifactId>solr-maven-plugin</artifactId>
+                <version>0.3.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.solr</groupId>
+                        <artifactId>solr-core</artifactId>
+                        <version>${solr.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.solr</groupId>
+                        <artifactId>solr-test-framework</artifactId>
+                        <version>${solr.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>start-solr-cloud</id>
