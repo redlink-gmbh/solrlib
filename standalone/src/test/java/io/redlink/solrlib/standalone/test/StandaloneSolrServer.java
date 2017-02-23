@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2017 Redlink GmbH.
  */
-package io.redlink.solrlib.standalone;
+package io.redlink.solrlib.standalone.test;
 
 import com.google.common.base.Preconditions;
 import io.redlink.utils.PathUtils;
@@ -15,9 +15,10 @@ import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
- * Created by jakob on 20.02.17.
+ * Start and stop a Solr-Server, wrapped in an {@link ExternalResource}.
  */
 public class StandaloneSolrServer extends ExternalResource {
 
@@ -26,6 +27,7 @@ public class StandaloneSolrServer extends ExternalResource {
     private final JettyConfig jettyConfig;
     private Path solrHome;
     private JettySolrRunner jetty;
+    private boolean deleteSolrHome = true;
 
     public StandaloneSolrServer() {
         this(-1, null);
@@ -39,11 +41,21 @@ public class StandaloneSolrServer extends ExternalResource {
         jettyConfig = builder.build();
     }
 
+    public StandaloneSolrServer(int port, String context, Path solrHome) {
+        this(port, context);
+        this.solrHome = solrHome;
+    }
+
     @Override
     protected void before() throws Throwable {
         super.before();
 
-        solrHome = Files.createTempDirectory("testSolr");
+        if (Objects.isNull(solrHome)) {
+            solrHome = Files.createTempDirectory("testSolr");
+        } else {
+            Files.createDirectories(solrHome);
+            deleteSolrHome = false;
+        }
         try (PrintStream solrXml = new PrintStream(Files.newOutputStream(solrHome.resolve("solr.xml")))) {
             solrXml.println("<solr></solr>");
         }
@@ -60,7 +72,7 @@ public class StandaloneSolrServer extends ExternalResource {
                 logger.warn("Stopping StandaloneSolrServer");
                 jetty.stop();
             }
-            if (solrHome != null) {
+            if (deleteSolrHome && solrHome != null) {
                 logger.warn("Cleaning Up solr-home {}", solrHome);
                 PathUtils.deleteRecursive(solrHome);
             }

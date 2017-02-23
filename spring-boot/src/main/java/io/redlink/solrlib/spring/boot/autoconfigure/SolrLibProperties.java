@@ -15,6 +15,7 @@ public class SolrLibProperties {
     private Path home = null;
 
     private String zkConnection = null;
+    private String baseUrl = null;
     private int maxShardsPerNode = 1;
     private String collectionPrefix = "";
 
@@ -48,5 +49,14 @@ public class SolrLibProperties {
 
     public void setCollectionPrefix(String collectionPrefix) {
         this.collectionPrefix = collectionPrefix;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public SolrLibProperties setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+        return this;
     }
 }

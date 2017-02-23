@@ -6,6 +6,8 @@ import io.redlink.solrlib.cloud.SolrCloudConnector;
 import io.redlink.solrlib.cloud.SolrCloudConnectorConfiguration;
 import io.redlink.solrlib.embedded.EmbeddedCoreContainer;
 import io.redlink.solrlib.embedded.EmbeddedCoreContainerConfiguration;
+import io.redlink.solrlib.standalone.SolrServerConnector;
+import io.redlink.solrlib.standalone.SolrServerConnectorConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -55,6 +57,22 @@ public class SolrLibAutoconfiguration {
         config.setPrefix(props.getCollectionPrefix());
 
         return new SolrCloudConnector(coreDescriptors, config);
+    }
+
+    @Primary
+    @Bean(initMethod = "initialize", destroyMethod = "shutdown")
+    @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+    @ConditionalOnClass(SolrServerConnector.class)
+    @ConditionalOnProperty({"solrlib.base-url", "solrlib.home"})
+    @ConditionalOnMissingBean(SolrCoreContainer.class)
+    public SolrCoreContainer solrServerConnector() {
+        log.debug("Creating solrServerConnector");
+        final SolrServerConnectorConfiguration config = new SolrServerConnectorConfiguration();
+        config.setSolrUrl(props.getBaseUrl());
+        config.setSolrHome(props.getHome());
+        config.setPrefix(props.getCollectionPrefix());
+
+        return new SolrServerConnector(coreDescriptors, config);
     }
 
     @Bean(initMethod = "initialize", destroyMethod = "shutdown")

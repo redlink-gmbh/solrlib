@@ -2,6 +2,7 @@ package io.redlink.solrlib.standalone;
 
 import io.redlink.solrlib.SimpleCoreDescriptor;
 import io.redlink.solrlib.SolrCoreDescriptor;
+import io.redlink.solrlib.standalone.test.StandaloneSolrServer;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.hamcrest.Matchers;

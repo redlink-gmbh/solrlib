@@ -33,6 +33,12 @@
         </dependency>
         <dependency>
             <groupId>io.redlink.solrlib</groupId>
+            <artifactId>solrlib-standalone</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.redlink.solrlib</groupId>
             <artifactId>solrlib-embedded</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -42,6 +48,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>${spring.boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.redlink.solrlib</groupId>
+            <artifactId>solrlib-standalone</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-test-framework</artifactId>
+            <version>${solr.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -66,6 +85,7 @@
                         <configuration>
                             <portNames>
                                 <portName>solr.zk.port</portName>
+                                <portName>solr.server.port</portName>
                             </portNames>
                         </configuration>
                     </execution>
@@ -103,6 +123,9 @@
                     <systemProperties>
                         <!--suppress MavenModelInspection -->
                         <solr.zk.port>${solr.zk.port}/</solr.zk.port>
+                        <!--suppress MavenModelInspection -->
+                        <solr.server.port>${solr.server.port}</solr.server.port>
+                        <solr.server.home>${project.build.directory}/solr-home</solr.server.home>
                     </systemProperties>
                 </configuration>
             </plugin>
