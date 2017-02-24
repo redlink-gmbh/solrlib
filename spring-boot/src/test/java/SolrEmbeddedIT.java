@@ -39,6 +39,7 @@ public class SolrEmbeddedIT {
     @ClassRule
     public static TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private SolrCoreContainer coreContainer;
 

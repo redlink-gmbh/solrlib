@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class SolrCoreContainer {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    protected final Optional<ExecutorService> executorService;
-    protected final CountDownLatch startupComplete;
+    private final Optional<ExecutorService> executorService;
+    private final CountDownLatch startupComplete;
     private final Map<String, CountDownLatch> coreInitialized;
     private final AtomicBoolean initStarted;
     private Throwable initException = null;

@@ -4,7 +4,7 @@
 package io.redlink.solrlib.cloud;
 
 /**
- * Created by jakob on 25.01.17.
+ * Configuration-Bean for {@link SolrCloudConnector}.
  */
 public class SolrCloudConnectorConfiguration {
     private String zkConnection = "localhost:9983";

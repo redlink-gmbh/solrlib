@@ -35,8 +35,10 @@ public abstract class SolrCoreDescriptor {
 
     public abstract void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException;
 
+    @SuppressWarnings({"EmptyMethod", "RedundantThrows"})
     public void onCoreCreated(SolrClient solrClient) throws IOException, SolrServerException {}
 
+    @SuppressWarnings({"EmptyMethod", "RedundantThrows"})
     public void onCoreStarted(SolrClient solrClient) throws IOException, SolrServerException {}
 
     protected final void unpackSolrCoreDir(Path solrCoreBundle, Path solrCoreDir) throws IOException {

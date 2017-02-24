@@ -32,6 +32,7 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
 
     @Override
     public void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException {
+        log.debug("{}: initializing core-dir {}", coreName, coreDir);
         if (Files.isDirectory(coreBundle)) {
             unpackSolrCoreDir(coreBundle, coreDir);
         } else {
@@ -67,7 +68,7 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
      *
      * @see Object#getClass()
      */
-    public static SolrCoreDescriptor createFromResource(String coreName, String resource, Object contextObject) throws IOException {
+    public static SolrCoreDescriptor createFromResource(String coreName, String resource, Object contextObject) {
         return createFromResource(coreName, resource, contextObject.getClass());
     }
 
@@ -79,7 +80,7 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
      *
      * @see Class#getResource(String)
      */
-    public static SolrCoreDescriptor createFromResource(String coreName, String resource, Class<?> clazz) throws IOException {
+    public static SolrCoreDescriptor createFromResource(String coreName, String resource, Class<?> clazz) {
         return new SimpleCoreDescriptor(coreName, ResourceLoaderUtils.getResourceAsPath(resource, clazz));
     }
 
@@ -91,7 +92,7 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
      *
      * @see ClassLoader#getResource(String)
      */
-    public static SolrCoreDescriptor createFromResource(String coreName, String resource, ClassLoader classLoader) throws IOException {
+    public static SolrCoreDescriptor createFromResource(String coreName, String resource, ClassLoader classLoader) {
         return new SimpleCoreDescriptor(coreName, ResourceLoaderUtils.getResourceAsPath(resource, classLoader));
     }
 

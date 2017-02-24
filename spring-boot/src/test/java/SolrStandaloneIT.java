@@ -10,7 +10,10 @@ import io.redlink.utils.PathUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.hamcrest.Matchers;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,17 +71,13 @@ public class SolrStandaloneIT {
         };
     }
 
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private SolrCoreContainer coreContainer;
 
     @Autowired
     @Qualifier(TestCoreDesciptorsConfiguration.CORE_NAME)
     private SolrCoreDescriptor solrCoreDescriptor;
-
-    @Before
-    public void setUp() throws Exception {
-
-    }
 
     @Test
     public void testInject() throws Exception {

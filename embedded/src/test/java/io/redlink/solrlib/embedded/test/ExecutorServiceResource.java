@@ -37,12 +37,8 @@ public class ExecutorServiceResource extends ExternalResource {
         }
     }
 
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
     public ExecutorService get() {
-        return getExecutorService();
+        return executorService;
     }
 
 

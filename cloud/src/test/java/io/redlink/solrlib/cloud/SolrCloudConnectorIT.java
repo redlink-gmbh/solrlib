@@ -8,16 +8,12 @@ import org.hamcrest.Matchers;
 import org.junit.*;
 
 import java.util.Collections;
-import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 /**
  *
  */
 public class SolrCloudConnectorIT {
 
-    private static SolrCloudConnectorConfiguration config;
     private static SolrCloudConnector coreContainer;
     private static SolrCoreDescriptor coreDescriptor;
 
@@ -26,7 +22,7 @@ public class SolrCloudConnectorIT {
         String zkString = System.getProperty("zkConnection");
         Assume.assumeThat("No zkConnection", zkString, Matchers.allOf(Matchers.notNullValue(), Matchers.not(Matchers.isEmptyString())));
 
-        config = new SolrCloudConnectorConfiguration();
+        final SolrCloudConnectorConfiguration config = new SolrCloudConnectorConfiguration();
         config.setZkConnection(zkString);
         config.setMaxShardsPerNode(2);
         config.setPrefix("integrationTest_");

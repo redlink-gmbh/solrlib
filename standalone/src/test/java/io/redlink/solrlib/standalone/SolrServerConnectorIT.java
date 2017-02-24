@@ -9,7 +9,6 @@ import org.hamcrest.Matchers;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -21,8 +20,6 @@ import static org.mockito.Mockito.*;
 /**
  */
 public class SolrServerConnectorIT {
-
-    private Logger log = LoggerFactory.getLogger(getClass());
 
     @ClassRule
     public static StandaloneSolrServer solrServer = new StandaloneSolrServer();
@@ -37,7 +34,7 @@ public class SolrServerConnectorIT {
         configuration = new SolrServerConnectorConfiguration();
         configuration.setSolrHome(temporaryFolder.newFolder("solr-home").toPath());
         configuration.setSolrUrl(solrServer.getBaseUrl());
-        log.info("Testing against external server {}", solrServer.getBaseUrl());
+        LoggerFactory.getLogger(getClass()).info("Testing against external server {}", solrServer.getBaseUrl());
     }
 
     @Test

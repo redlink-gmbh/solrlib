@@ -36,9 +36,11 @@ import java.util.concurrent.TimeUnit;
 @EnableAutoConfiguration
 public class SolrCloudIT {
 
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private SolrCoreContainer coreContainer;
 
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private SolrLibProperties solrLibProperties;
 
