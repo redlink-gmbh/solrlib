@@ -24,6 +24,7 @@ public class SolrCoreContainerTest {
                 try {
                     Thread.sleep(1500);
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     throw new IOException(e);
                 }
             }
