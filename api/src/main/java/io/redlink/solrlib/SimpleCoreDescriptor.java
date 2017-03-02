@@ -4,6 +4,8 @@
 package io.redlink.solrlib;
 
 import io.redlink.utils.ResourceLoaderUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,7 +14,9 @@ import java.nio.file.Path;
 /**
  * SimpleCoreDescriptor that unpacks a core-bundle from the provided {@link Path}.
  */
-public class SimpleCoreDescriptor extends SolrCoreDescriptor {
+public class SimpleCoreDescriptor implements SolrCoreDescriptor {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final String coreName;
     private final Path coreBundle;
@@ -21,8 +25,8 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
     public SimpleCoreDescriptor(String coreName, Path coreBundle) {
         this.coreName = coreName;
         this.coreBundle = coreBundle;
-        numShards = super.getNumShards();
-        replicationFactor = super.getReplicationFactor();
+        numShards = 1;
+        replicationFactor = 1;
     }
 
     @Override
@@ -34,9 +38,9 @@ public class SimpleCoreDescriptor extends SolrCoreDescriptor {
     public void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException {
         log.debug("{}: initializing core-dir {}", coreName, coreDir);
         if (Files.isDirectory(coreBundle)) {
-            unpackSolrCoreDir(coreBundle, coreDir);
+            SolrCoreDescriptor.unpackSolrCoreDir(coreBundle, coreDir);
         } else {
-            unpackSolrCoreZip(coreBundle, coreDir);
+            SolrCoreDescriptor.unpackSolrCoreZip(coreBundle, coreDir);
         }
     }
 

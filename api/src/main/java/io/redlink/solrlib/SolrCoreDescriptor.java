@@ -7,7 +7,6 @@ import io.redlink.utils.PathUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -15,34 +14,29 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
 import java.util.Optional;
 
 /**
  * A SolrCoreDescriptor.
  */
-public abstract class SolrCoreDescriptor {
+public interface SolrCoreDescriptor {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    default int getNumShards() { return 1; }
 
-    public int getNumShards() { return 1; }
+    default int getReplicationFactor() { return 1; }
 
-    public int getReplicationFactor() { return 1; }
-
-    public String getCoreName() {
+    default String getCoreName() {
         return getClass().getSimpleName();
     }
 
-    public abstract void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException;
+    void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException;
 
-    @SuppressWarnings({"EmptyMethod", "RedundantThrows"})
-    public void onCoreCreated(SolrClient solrClient) throws IOException, SolrServerException {}
+    default void onCoreCreated(SolrClient solrClient) throws IOException, SolrServerException {}
 
-    @SuppressWarnings({"EmptyMethod", "RedundantThrows"})
-    public void onCoreStarted(SolrClient solrClient) throws IOException, SolrServerException {}
+    default void onCoreStarted(SolrClient solrClient) throws IOException, SolrServerException {}
 
-    protected final void unpackSolrCoreDir(Path solrCoreBundle, Path solrCoreDir) throws IOException {
-        log.debug("Unpacking SolrCore directory {} to {}", solrCoreBundle, solrCoreDir);
+    static void unpackSolrCoreDir(Path solrCoreBundle, Path solrCoreDir) throws IOException {
+        LoggerFactory.getLogger(SolrCoreDescriptor.class).debug("Unpacking SolrCore directory {} to {}", solrCoreBundle, solrCoreDir);
         final Optional<Path> coreProperties =
                 Files.find(solrCoreBundle, Integer.MAX_VALUE,
                         (p, a) -> Files.isRegularFile(p)
@@ -57,13 +51,17 @@ public abstract class SolrCoreDescriptor {
         PathUtils.copyRecursive(sourceDir, solrCoreDir);
     }
 
-    protected final void unpackSolrCoreZip(Path solrCoreBundle, Path solrHome) throws IOException {
+    static void unpackSolrCoreZip(Path solrCoreBundle, Path solrHome) throws IOException {
+        unpackSolrCoreZip(solrCoreBundle, solrHome, null);
+    }
+
+    static void unpackSolrCoreZip(Path solrCoreBundle, Path solrHome, ClassLoader classLoader) throws IOException {
         final String contentType = Files.probeContentType(solrCoreBundle);
         if ("application/zip".equals(contentType) ||
                 //fallback if Files.probeContentType(..) fails (such as on Max OS X)
                 (contentType == null && StringUtils.endsWithAny(solrCoreBundle.getFileName().toString(), ".zip", ".jar"))) {
-            log.debug("Unpacking SolrCore zip {} to {}", solrCoreBundle, solrHome);
-            try (FileSystem fs = FileSystems.newFileSystem(solrCoreBundle, getClass().getClassLoader())) {
+            LoggerFactory.getLogger(SolrCoreDescriptor.class).debug("Unpacking SolrCore zip {} to {}", solrCoreBundle, solrHome);
+            try (FileSystem fs = FileSystems.newFileSystem(solrCoreBundle, classLoader)) {
                 unpackSolrCoreDir(fs.getPath("/"), solrHome);
             }
         } else {
@@ -71,8 +69,4 @@ public abstract class SolrCoreDescriptor {
         }
     }
 
-    @Override
-    public String toString() {
-        return String.format(Locale.ENGLISH, "CoreDescriptor '%s'", getCoreName());
-    }
 }
