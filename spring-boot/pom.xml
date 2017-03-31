@@ -107,6 +107,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <skip>${skipITs}</skip>
                     <createCols>false</createCols>
                     <numServers>1</numServers>
                     <!--suppress MavenModelInspection -->

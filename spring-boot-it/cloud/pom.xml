@@ -1,49 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>io.redlink.solrlib</groupId>
-        <artifactId>solrlib</artifactId>
+        <artifactId>solrlib-spring-boot-it</artifactId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>solrlib-cloud</artifactId>
-    <name>SolrLib :: SolrCloud Backend</name>
+    <artifactId>solrlib-spring-boot-it-cloud</artifactId>
+    <name>SolrLib :: Spring-Boot Autoconfiguration IT - Cloud</name>
 
     <dependencies>
         <dependency>
             <groupId>io.redlink.solrlib</groupId>
-            <artifactId>solrlib-api</artifactId>
+            <artifactId>solrlib-cloud</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-    </properties>
 
     <build>
         <plugins>
@@ -97,7 +74,7 @@
                 <configuration>
                     <systemProperties>
                         <!--suppress MavenModelInspection -->
-                        <zkConnection>localhost:${solr.zk.port}/</zkConnection>
+                        <solr.zk.port>${solr.zk.port}/</solr.zk.port>
                     </systemProperties>
                 </configuration>
             </plugin>
