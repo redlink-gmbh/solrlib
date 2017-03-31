@@ -10,6 +10,7 @@ public class SolrCloudConnectorConfiguration {
     private String zkConnection = "localhost:9983";
     private String prefix = "";
     private int maxShardsPerNode = 1;
+    private boolean deployCores = true;
 
     public String getZkConnection() {
         return zkConnection;
@@ -33,5 +34,13 @@ public class SolrCloudConnectorConfiguration {
 
     public Integer getMaxShardsPerNode() {
         return maxShardsPerNode;
+    }
+
+    public boolean isDeployCores() {
+        return deployCores;
+    }
+
+    public void setDeployCores(boolean deployCores) {
+        this.deployCores = deployCores;
     }
 }

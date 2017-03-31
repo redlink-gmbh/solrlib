@@ -39,7 +39,7 @@ public class SolrLibStandaloneAutoconfiguration {
     @Bean(initMethod = "initialize", destroyMethod = "shutdown")
     @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
     @ConditionalOnClass(SolrServerConnector.class)
-    @ConditionalOnProperty({"solrlib.base-url", "solrlib.home"})
+    @ConditionalOnProperty({"solrlib.base-url"})
     @ConditionalOnMissingBean(SolrCoreContainer.class)
     public SolrCoreContainer solrServerConnector() {
         log.debug("Creating solrServerConnector");
@@ -47,6 +47,7 @@ public class SolrLibStandaloneAutoconfiguration {
         config.setSolrUrl(props.getBaseUrl());
         config.setSolrHome(props.getHome());
         config.setPrefix(props.getCollectionPrefix());
+        config.setDeployCores(props.isDeployCores());
 
         return new SolrServerConnector(coreDescriptors, config);
     }

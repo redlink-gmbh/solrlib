@@ -12,6 +12,7 @@ public class SolrServerConnectorConfiguration {
     private String prefix;
     private String solrUrl;
     private Path solrHome;
+    private boolean deployCores = true;
 
     public String getPrefix() {
         return prefix;
@@ -35,5 +36,13 @@ public class SolrServerConnectorConfiguration {
 
     public void setSolrHome(Path solrHome) {
         this.solrHome = solrHome;
+    }
+
+    public boolean isDeployCores() {
+        return deployCores;
+    }
+
+    public void setDeployCores(boolean deployCores) {
+        this.deployCores = deployCores;
     }
 }

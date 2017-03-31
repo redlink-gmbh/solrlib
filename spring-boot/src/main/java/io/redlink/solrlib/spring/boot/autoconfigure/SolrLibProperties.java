@@ -18,6 +18,7 @@ public class SolrLibProperties {
     private String baseUrl = null;
     private int maxShardsPerNode = 1;
     private String collectionPrefix = "";
+    private boolean deployCores = true;
 
     public Path getHome() {
         return home;
@@ -55,8 +56,15 @@ public class SolrLibProperties {
         return baseUrl;
     }
 
-    public SolrLibProperties setBaseUrl(String baseUrl) {
+    public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
-        return this;
+    }
+
+    public boolean isDeployCores() {
+        return deployCores;
+    }
+
+    public void setDeployCores(boolean deployCores) {
+        this.deployCores = deployCores;
     }
 }

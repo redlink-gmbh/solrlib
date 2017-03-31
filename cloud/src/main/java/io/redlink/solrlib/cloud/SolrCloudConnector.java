@@ -55,36 +55,46 @@ public class SolrCloudConnector extends SolrCoreContainer {
                     log.info("Initializing Core {} (remote: {})", coreName, remoteName);
                 }
 
-                final Path tmp = Files.createTempDirectory(coreName);
-                try {
-                    coreDescriptor.initCoreDirectory(tmp, sharedLibs);
+                if (config.isDeployCores()) {
+                    final Path tmp = Files.createTempDirectory(coreName);
+                    try {
+                        coreDescriptor.initCoreDirectory(tmp, sharedLibs);
 
-                    client.uploadConfig(tmp.resolve("conf"), remoteName);
+                        client.uploadConfig(tmp.resolve("conf"), remoteName);
 
-                    if (!existingCollections.contains(remoteName)) {
-                        // TODO: Check and log the response
-                        final NamedList<Object> response = client.request(CollectionAdminRequest
-                                        .createCollection(remoteName, remoteName,
-                                                Math.max(1, coreDescriptor.getNumShards()),
-                                                Math.max(2, coreDescriptor.getReplicationFactor())
-                                        )
-                                        .setMaxShardsPerNode(config.getMaxShardsPerNode())
-                        );
-                        log.debug("Created Collection {}, CoreAdminResponse: {}", coreName, response);
-                        scheduleCoreInit(executorService, coreDescriptor, true);
-                    } else {
-                        log.debug("Collection {} already exists in SolrCloud '{}' as {}", coreName, config.getZkConnection(), remoteName);
-                        // TODO: Check and log the response
-                        final NamedList<Object> response = client.request(CollectionAdminRequest.reloadCollection(remoteName));
-                        log.debug("Reloaded Collection {}, CoreAdminResponse: {}", coreName, response);
-                        scheduleCoreInit(executorService, coreDescriptor, false);
+                        if (!existingCollections.contains(remoteName)) {
+                            // TODO: Check and log the response
+                            final NamedList<Object> response = client.request(CollectionAdminRequest
+                                            .createCollection(remoteName, remoteName,
+                                                    Math.max(1, coreDescriptor.getNumShards()),
+                                                    Math.max(2, coreDescriptor.getReplicationFactor())
+                                            )
+                                            .setMaxShardsPerNode(config.getMaxShardsPerNode())
+                            );
+                            log.debug("Created Collection {}, CoreAdminResponse: {}", coreName, response);
+                            scheduleCoreInit(executorService, coreDescriptor, true);
+                        } else {
+                            log.debug("Collection {} already exists in SolrCloud '{}' as {}", coreName, config.getZkConnection(), remoteName);
+                            // TODO: Check and log the response
+                            final NamedList<Object> response = client.request(CollectionAdminRequest.reloadCollection(remoteName));
+                            log.debug("Reloaded Collection {}, CoreAdminResponse: {}", coreName, response);
+                            scheduleCoreInit(executorService, coreDescriptor, false);
+                        }
+                        availableCores.put(coreName, coreDescriptor);
+                    } catch (SolrServerException e) {
+                        log.debug("Initializing core {} ({}) failed: {}", coreName, remoteName, e.getMessage());
+                        throw new IOException(String.format("Initializing collection %s (%s) failed", coreName, remoteName), e);
+                    } finally {
+                        PathUtils.deleteRecursive(tmp);
                     }
-                    availableCores.put(coreName, coreDescriptor);
-                } catch (SolrServerException e) {
-                    log.debug("Initializing core {} ({}) failed: {}", coreName, remoteName, e.getMessage());
-                    throw new IOException(String.format("Initializing collection %s (%s) failed", coreName, remoteName), e);
-                } finally {
-                    PathUtils.deleteRecursive(tmp);
+                } else {
+                    if (existingCollections.contains(remoteName)) {
+                        log.debug("Collection {} exists in SolrCloud '{}' as {}", coreName, config.getZkConnection(), remoteName);
+                        scheduleCoreInit(executorService, coreDescriptor, false);
+                        availableCores.put(coreName, coreDescriptor);
+                    } else {
+                        log.warn("Collection {} (remote: {}) not available in SolrCloud '{}' but deployCores is set to false", coreName, remoteName, config.getZkConnection());
+                    }
                 }
             }
             log.info("Initialized {} collections in Solr-Cloud {}: {}", availableCores.size(), config.getZkConnection(), availableCores);

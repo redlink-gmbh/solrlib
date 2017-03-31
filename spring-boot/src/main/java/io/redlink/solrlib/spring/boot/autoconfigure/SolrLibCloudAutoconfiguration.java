@@ -47,6 +47,7 @@ public class SolrLibCloudAutoconfiguration {
         config.setZkConnection(props.getZkConnection());
         config.setMaxShardsPerNode(props.getMaxShardsPerNode());
         config.setPrefix(props.getCollectionPrefix());
+        config.setDeployCores(props.isDeployCores());
 
         return new SolrCloudConnector(coreDescriptors, config);
     }

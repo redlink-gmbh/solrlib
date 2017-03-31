@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,47 +49,70 @@ public class SolrServerConnector extends SolrCoreContainer {
     @Override
     protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         Preconditions.checkState(initialized.compareAndSet(false, true));
+        Preconditions.checkArgument(!configuration.isDeployCores() || Objects.nonNull(configuration.getSolrHome()));
 
-        final Path solrHome = configuration.getSolrHome();
-        Files.createDirectories(solrHome);
-        final Path libDir = solrHome.resolve("lib");
+        if (configuration.isDeployCores()) {
+            final Path solrHome = configuration.getSolrHome();
+            Files.createDirectories(solrHome);
+            final Path libDir = solrHome.resolve("lib");
+            Files.createDirectories(libDir);
 
-        try (HttpSolrClient solrClient = new HttpSolrClient.Builder(solrBaseUrl).build()) {
-            for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
-                final String coreName = coreDescriptor.getCoreName();
-                if (availableCores.containsKey(coreName)) {
-                    log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
-                    continue;
+            try (HttpSolrClient solrClient = new HttpSolrClient.Builder(solrBaseUrl).build()) {
+                for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
+                    final String coreName = coreDescriptor.getCoreName();
+                    if (availableCores.containsKey(coreName)) {
+                        log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
+                        continue;
+                    }
+                    final String remoteName = createRemoteName(coreName);
+
+                    final Path coreHome = solrHome.resolve(remoteName);
+                    coreDescriptor.initCoreDirectory(coreHome, libDir);
+
+                    final Path corePropertiesFile = coreHome.resolve("core.properties");
+                    // core.properties is created by the CreateCore-Command.
+                    Files.deleteIfExists(corePropertiesFile);
+
+                    if (coreDescriptor.getNumShards() > 1 || coreDescriptor.getReplicationFactor() > 1) {
+                        log.warn("Deploying {} to SolrServerConnector, ignoring config of shards={},replication={}", coreName,
+                                coreDescriptor.getNumShards(), coreDescriptor.getReplicationFactor());
+                    }
+
+                    // Create or reload the core
+                    if (CoreAdminRequest.getStatus(remoteName, solrClient).getStartTime(remoteName) == null) {
+                        final CoreAdminResponse adminResponse = CoreAdminRequest.createCore(remoteName, coreHome.toAbsolutePath().toString(), solrClient);
+                    } else {
+                        final CoreAdminResponse adminResponse = CoreAdminRequest.reloadCore(remoteName, solrClient);
+                    }
+                    // schedule client-side core init
+                    if (findInNamedList(CoreAdminRequest.getStatus(remoteName, solrClient).getCoreStatus(remoteName),
+                            "index", "lastModified") == null) {
+                        scheduleCoreInit(executorService, coreDescriptor, true);
+                    } else {
+                        scheduleCoreInit(executorService, coreDescriptor, false);
+                    }
+
+                    availableCores.put(coreName, coreDescriptor);
                 }
-                final String remoteName = createRemoteName(coreName);
-
-                final Path coreHome = solrHome.resolve(remoteName);
-                coreDescriptor.initCoreDirectory(coreHome, libDir);
-
-                final Path corePropertiesFile = coreHome.resolve("core.properties");
-                // core.properties is created by the CreateCore-Command.
-                Files.deleteIfExists(corePropertiesFile);
-
-                if (coreDescriptor.getNumShards() > 1 || coreDescriptor.getReplicationFactor() > 1) {
-                    log.warn("Deploying {} to SolrServerConnector, ignoring config of shards={},replication={}", coreName,
-                            coreDescriptor.getNumShards(), coreDescriptor.getReplicationFactor());
+            }
+        } else {
+            try (HttpSolrClient solrClient = new HttpSolrClient.Builder(solrBaseUrl).build()) {
+                for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
+                    final String coreName = coreDescriptor.getCoreName();
+                    if (availableCores.containsKey(coreName)) {
+                        log.warn("CoreName-Clash: {} already initialized. Skipping {}", coreName, coreDescriptor.getClass());
+                        continue;
+                    }
+                    final String remoteName = createRemoteName(coreName);
+                    if (CoreAdminRequest.getStatus(remoteName, solrClient).getStartTime(remoteName) == null) {
+                        // Core does not exists
+                        log.warn("Collection {} (remote: {}) not available in Solr '{}' but deployCores is set to false", coreName, remoteName, solrBaseUrl);
+                    } else {
+                        log.debug("Collection {} exists in Solr '{}' as {}", coreName, solrBaseUrl, remoteName);
+                        scheduleCoreInit(executorService, coreDescriptor, false);
+                        availableCores.put(coreName, coreDescriptor);
+                    }
                 }
-
-                // Create or reload the core
-                if (CoreAdminRequest.getStatus(remoteName, solrClient).getStartTime(remoteName) == null) {
-                    final CoreAdminResponse adminResponse = CoreAdminRequest.createCore(remoteName, coreHome.toAbsolutePath().toString(), solrClient);
-                } else {
-                    final CoreAdminResponse adminResponse = CoreAdminRequest.reloadCore(remoteName, solrClient);
-                }
-                // schedule client-side core init
-                if (findInNamedList(CoreAdminRequest.getStatus(remoteName, solrClient).getCoreStatus(remoteName),
-                        "index", "lastModified") == null) {
-                    scheduleCoreInit(executorService, coreDescriptor, true);
-                } else {
-                    scheduleCoreInit(executorService, coreDescriptor, false);
-                }
-
-                availableCores.put(coreName, coreDescriptor);
             }
         }
     }
