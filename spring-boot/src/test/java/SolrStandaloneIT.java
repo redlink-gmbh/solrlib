@@ -4,6 +4,9 @@
 
 import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibCloudAutoconfiguration;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibEmbeddedAutoconfiguration;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibStandaloneAutoconfiguration;
 import io.redlink.solrlib.standalone.SolrServerConnector;
 import io.redlink.solrlib.standalone.test.StandaloneSolrServer;
 import io.redlink.utils.PathUtils;
@@ -17,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,7 +39,7 @@ import java.nio.file.Paths;
         initializers = ConfigFileApplicationContextInitializer.class
 )
 @ActiveProfiles("standalone")
-@EnableAutoConfiguration
+@ImportAutoConfiguration({SolrLibEmbeddedAutoconfiguration.class, SolrLibStandaloneAutoconfiguration.class, SolrLibCloudAutoconfiguration.class})
 public class SolrStandaloneIT {
 
     @ClassRule

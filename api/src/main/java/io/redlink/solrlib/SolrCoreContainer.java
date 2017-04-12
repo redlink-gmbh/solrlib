@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -159,5 +160,15 @@ public abstract class SolrCoreContainer {
 
     public SolrClient getSolrClient(SolrCoreDescriptor coreDescriptor) throws SolrServerException {
         return getSolrClient(coreDescriptor.getCoreName());
+    }
+
+    public boolean isStartupComplete() {
+        try {
+            return startupComplete.await(-1, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            // This should never happen...
+            Thread.currentThread().interrupt();
+            return false;
+        }
     }
 }

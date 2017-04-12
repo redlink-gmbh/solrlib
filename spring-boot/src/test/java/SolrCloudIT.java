@@ -5,7 +5,10 @@
 import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import io.redlink.solrlib.cloud.SolrCloudConnector;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibCloudAutoconfiguration;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibEmbeddedAutoconfiguration;
 import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibProperties;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibStandaloneAutoconfiguration;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
@@ -17,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,7 +36,7 @@ import java.util.concurrent.TimeUnit;
         initializers = ConfigFileApplicationContextInitializer.class
 )
 @ActiveProfiles("cloud")
-@EnableAutoConfiguration
+@ImportAutoConfiguration({SolrLibEmbeddedAutoconfiguration.class, SolrLibStandaloneAutoconfiguration.class, SolrLibCloudAutoconfiguration.class})
 public class SolrCloudIT {
 
     @SuppressWarnings("SpringJavaAutowiringInspection")

@@ -5,7 +5,10 @@
 import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import io.redlink.solrlib.embedded.EmbeddedCoreContainer;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibCloudAutoconfiguration;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibEmbeddedAutoconfiguration;
 import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibProperties;
+import io.redlink.solrlib.spring.boot.autoconfigure.SolrLibStandaloneAutoconfiguration;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.hamcrest.Matchers;
@@ -16,7 +19,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -33,7 +36,7 @@ import java.nio.file.Files;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SolrEmbeddedIT.EmbeddedConfiguration.class)
 @ActiveProfiles("embedded")
-@EnableAutoConfiguration
+@ImportAutoConfiguration({SolrLibEmbeddedAutoconfiguration.class, SolrLibStandaloneAutoconfiguration.class, SolrLibCloudAutoconfiguration.class})
 public class SolrEmbeddedIT {
 
     @ClassRule
