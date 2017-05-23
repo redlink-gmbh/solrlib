@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2017 redlink GmbH
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <prerequisites>
+        <maven>3.0.4</maven>
+    </prerequisites>
 
     <groupId>io.redlink.solrlib</groupId>
     <artifactId>solrlib</artifactId>
@@ -9,18 +29,51 @@
 
     <name>SolrLib</name>
     <description>A convenience library for Solr/SolrJ</description>
+    <inceptionYear>2017</inceptionYear>
 
-    <parent>
-        <groupId>io.redlink</groupId>
-        <artifactId>private-parent</artifactId>
-        <version>3</version>
-        <relativePath />
-    </parent>
+    <organization>
+        <name>redlink GmbH</name>
+        <url>http://redlink.at</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Jakob Frank</name>
+            <email>jakob.frank@redlink.co</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
-        <solr.version>6.2.1</solr.version>
+        <project.build.encoding>utf8</project.build.encoding>
+        <project.build.sourceEncoding>utf8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
+
+        <java.version>1.8</java.version>
 
         <redlink-nlp.version>1.1.3</redlink-nlp.version>
+        <solr.version>6.2.1</solr.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 
         <skipTests>false</skipTests>
         <skipITs>false</skipITs>
@@ -44,15 +97,16 @@
         <tag>HEAD</tag>
     </scm>
 
-    <repositories>
-        <repository>
-            <id>redlink.nexus</id>
-            <url>https://repo.redlink.io/mvn/content/groups/private/</url>
-        </repository>
-    </repositories>
-
     <dependencyManagement>
         <dependencies>
+            <!-- logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <!-- solr -->
             <dependency>
                 <groupId>org.apache.solr</groupId>
                 <artifactId>solr-solrj</artifactId>
@@ -63,6 +117,44 @@
                 <artifactId>solr-core</artifactId>
                 <version>${solr.version}</version>
             </dependency>
+
+            <!-- misc -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>22.0</version>
+            </dependency>
+
+            <!-- testing -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-library</artifactId>
+                <version>1.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>2.8.9</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -70,9 +162,17 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <optimize>true</optimize>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
@@ -85,6 +185,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -95,9 +196,36 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.19.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
                 <plugin>
                     <groupId>io.github.borisnaguet</groupId>
                     <artifactId>solr-maven-plugin</artifactId>
@@ -115,7 +243,49 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.5.3</version>
+                    <configuration>
+                        <pushChanges>false</pushChanges>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>${project.artifactId}-@{project.version}</tagNameFormat>
+                        <localCheckout>true</localCheckout>
+                        <connectionUrl>scm:git:file://${project.basedir}/</connectionUrl>
+                        <indentSize>4</indentSize>
+
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <releaseProfiles>release</releaseProfiles>
+                        <goals>deploy</goals>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
