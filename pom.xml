@@ -29,7 +29,7 @@
 
     <name>SolrLib</name>
     <description>A convenience library for Solr/SolrJ</description>
-    <url>https://bitbucket.org/redlinkgmbh/solrlib</url>
+    <url>https://github.com/redlink-gmbh/solrlib</url>
     <inceptionYear>2017</inceptionYear>
 
     <organization>
@@ -91,9 +91,9 @@
     </modules>
 
     <scm>
-        <connection>scm:git:https://bitbucket.org/redlinkgmbh/solrlib.git</connection>
-        <developerConnection>scm:git:git@bitbucket.org:redlinkgmbh/solrlib.git</developerConnection>
-        <url>https://bitbucket.org/redlinkgmbh/solrlib/src</url>
+        <connection>scm:git:https://github.com/redlink-gmbh/solrlib.git</connection>
+        <developerConnection>scm:git:git@github.com:redlink-gmbh/solrlib.git</developerConnection>
+        <url>https://github.com/redlink-gmbh/solrlib/src</url>
         <tag>HEAD</tag>
     </scm>
 
