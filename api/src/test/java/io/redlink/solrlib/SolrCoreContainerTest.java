@@ -17,6 +17,7 @@
 package io.redlink.solrlib;
 
 import org.apache.solr.client.solrj.SolrClient;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -73,6 +74,7 @@ public class SolrCoreContainerTest {
                         Thread.sleep(500);
                         scheduleCoreInit(executorService, coreDescriptor, true);
                         Thread.sleep(500);
+                        availableCores.put(coreDescriptor.getCoreName(), coreDescriptor);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -93,6 +95,9 @@ public class SolrCoreContainerTest {
         Mockito.verify(coreDescriptor, Mockito.times(1)).initCoreDirectory(null, null);
         Mockito.verify(coreDescriptor, Mockito.times(1)).onCoreCreated(Mockito.any());
         Mockito.verify(coreDescriptor, Mockito.times(1)).onCoreStarted(Mockito.any());
+
+        Assert.assertTrue(coreContainer.isCoreAvailable(coreDescriptor));
+        Assert.assertTrue(coreContainer.isCoreAvailable("mock"));
     }
 
     @Test

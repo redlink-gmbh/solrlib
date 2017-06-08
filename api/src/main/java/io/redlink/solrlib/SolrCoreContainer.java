@@ -128,6 +128,13 @@ public abstract class SolrCoreContainer {
 
     protected abstract SolrClient createSolrClient(String coreName);
 
+    /**
+     * Get a SolrClient for the provided SolrCoreDescriptor.
+     * <strong>Note:</strong> the caller is responsible for closing the returned SolrClient to avoid resource leakage.
+     * @param coreName the core to connect to
+     * @return a SolrClient
+     * @throws SolrServerException if the initialisation of the requested core failed
+     */
     public SolrClient getSolrClient(String coreName) throws SolrServerException {
         try {
             // Wait for the CoreContainer to be online
@@ -170,10 +177,21 @@ public abstract class SolrCoreContainer {
         }
     }
 
+    /**
+     * Get a SolrClient for the provided SolrCoreDescriptor.
+     * <strong>Note:</strong> the caller is responsible for closing the returned SolrClient to avoid resource leakage.
+     * @param coreDescriptor the core to connect to
+     * @return a SolrClient
+     * @throws SolrServerException if the initialisation of the requested core failed
+     */
     public SolrClient getSolrClient(SolrCoreDescriptor coreDescriptor) throws SolrServerException {
         return getSolrClient(coreDescriptor.getCoreName());
     }
 
+    /**
+     * Non-blocking check if startup of the SolrCoreContainer is complete.
+     * @return {@code true} if startup is complete.
+     */
     public boolean isStartupComplete() {
         try {
             return startupComplete.await(-1, TimeUnit.MILLISECONDS);
@@ -183,4 +201,19 @@ public abstract class SolrCoreContainer {
             return false;
         }
     }
+
+    /**
+     * Check if the given core is available (i.e. initialized)
+     */
+    public boolean isCoreAvailable(String coreName) {
+        return availableCores.containsKey(coreName);
+    }
+
+    /**
+     * Check if the given core is available (i.e. initialized)
+     */
+    public boolean isCoreAvailable(SolrCoreDescriptor coreDescriptor) {
+        return isCoreAvailable(coreDescriptor.getCoreName());
+    }
+
 }
