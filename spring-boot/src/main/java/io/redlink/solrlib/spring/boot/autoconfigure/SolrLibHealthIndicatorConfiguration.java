@@ -22,7 +22,7 @@ import org.springframework.boot.actuate.autoconfigure.ConditionalOnEnabledHealth
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +32,7 @@ import java.util.Set;
  */
 @Configuration
 @AutoConfigureAfter({SolrLibEmbeddedAutoconfiguration.class, SolrLibStandaloneAutoconfiguration.class, SolrLibCloudAutoconfiguration.class})
+@ConditionalOnClass(HealthIndicator.class)
 @ConditionalOnBean(SolrCoreContainer.class)
 @ConditionalOnEnabledHealthIndicator("solrlib")
 public class SolrLibHealthIndicatorConfiguration {
@@ -48,7 +49,6 @@ public class SolrLibHealthIndicatorConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "solrlib")
     public HealthIndicator solrlibHealthIndicator() {
         final CompositeHealthIndicator healthIndicator = new CompositeHealthIndicator(healthAggregator);
 
