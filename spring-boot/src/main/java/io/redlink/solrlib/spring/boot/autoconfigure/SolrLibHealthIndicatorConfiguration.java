@@ -18,6 +18,7 @@ package io.redlink.solrlib.spring.boot.autoconfigure;
 import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.response.SolrPingResponse;
 import org.springframework.boot.actuate.autoconfigure.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -104,7 +105,11 @@ public class SolrLibHealthIndicatorConfiguration {
                 builder.outOfService();
             } else {
                 try (SolrClient solrClient = solrCoreContainer.getSolrClient(coreDescriptor)) {
-                    builder.up().withDetail("status", solrClient.ping().getResponse().get("status"));
+                    final SolrPingResponse ping = solrClient.ping();
+                    builder.up()
+                            .withDetail("ping", ping.getQTime())
+                            .withDetail("response", ping.getResponse().get("status"))
+                    ;
                 }
             }
         }
