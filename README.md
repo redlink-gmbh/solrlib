@@ -60,11 +60,18 @@ shutdown.
 
 ### Standalone Mode
 
-<!-- TODO -->
+When using `solrlib-standalone`, _SolrLib_ connects to an external Solr server via http. If 
+the home-directory is configured, the registered cores are copied there and registered via the
+_Solr Core Admin API_. The configuration flag `deployCores` chan further disable this.
 
 ### Cloud Mode
 
-<!-- TODO -->
+In `solrlib-cloud`, _SolrLib_ connects to an SolrCloud ensemble via the provided zookeeper connection
+string.
+If the configuration flag `deployCores` is set, all registered cores will be deployed to SolrCloud
+using `CloudSolrClient.uploadConfig`. 
+
+**NOTE:** adding runtime-libraries from the `lib` folder is currently not supported!
 
 ### Spring Boot
     
@@ -87,12 +94,15 @@ shutdown.
     
     # Only relevant in cloud-mode
     solrlib.max-shards-per-node = 1
-    
-    
+        
     # Only used by standalone and cloud
     #      option to disable automatic configuration update/deployment
     #      to remote servers. You might not have the karma to do so.
     solrlib.deploy-cores = true
+    
+    # Only used by embedded
+    #      option to delete the solrlib-home upon shutdown
+    solrlib.delete-on-shutdown = false
     
 ## License
 
