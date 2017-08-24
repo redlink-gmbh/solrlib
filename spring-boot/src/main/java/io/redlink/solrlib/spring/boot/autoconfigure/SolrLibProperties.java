@@ -31,6 +31,7 @@ public class SolrLibProperties {
     private int maxShardsPerNode = 1;
     private String collectionPrefix = "";
     private boolean deployCores = true;
+    private boolean deleteOnShutdown = false;
 
     public Path getHome() {
         return home;
@@ -78,5 +79,13 @@ public class SolrLibProperties {
 
     public void setDeployCores(boolean deployCores) {
         this.deployCores = deployCores;
+    }
+
+    public boolean isDeleteOnShutdown() {
+        return deleteOnShutdown;
+    }
+
+    public void setDeleteOnShutdown(boolean deleteOnShutdown) {
+        this.deleteOnShutdown = deleteOnShutdown;
     }
 }

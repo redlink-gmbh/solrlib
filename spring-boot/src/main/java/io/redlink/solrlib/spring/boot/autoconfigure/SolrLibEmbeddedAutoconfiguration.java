@@ -71,6 +71,7 @@ public class SolrLibEmbeddedAutoconfiguration {
             }
         }
         config.setHome(solrHome);
+        config.setDeleteOnShutdown(props.isDeleteOnShutdown());
 
         return new EmbeddedCoreContainer(coreDescriptors, config);
     }
