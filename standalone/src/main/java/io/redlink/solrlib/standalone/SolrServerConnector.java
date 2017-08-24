@@ -61,9 +61,9 @@ public class SolrServerConnector extends SolrCoreContainer {
     @Override
     protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         Preconditions.checkState(initialized.compareAndSet(false, true));
-        Preconditions.checkArgument(!configuration.isDeployCores() || Objects.nonNull(configuration.getSolrHome()));
+        Preconditions.checkArgument(Objects.nonNull(solrBaseUrl));
 
-        if (configuration.isDeployCores()) {
+        if (configuration.isDeployCores() && Objects.nonNull(configuration.getSolrHome())) {
             final Path solrHome = configuration.getSolrHome();
             Files.createDirectories(solrHome);
             final Path libDir = solrHome.resolve("lib");
