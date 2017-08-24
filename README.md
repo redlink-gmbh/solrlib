@@ -24,32 +24,39 @@ For convenience, there is also a `solrlib-spring-boot-autoconfigure` module for 
 
 Cores/collections are registered by using a `SolrCoreDescriptor`, e.g. a `SimpleCoreDescriptor`:
 
-```!java
-    // Create core-descriptor
-    SimpleCoreDescriptor myCore = new SimpleCoreDescriptor("my-core", Paths.get("/path/to/solr-conf");
-    
-    // Create SolrCoreContainer and register Core
-    EmbeddedCoreContainerConfiguration config = new EmbeddedCoreContainerConfiguration();
-    config.setHome(solrHome);
-    
-    SolrCoreContainer coreContainer = new EmbeddedCoreContainer(Collections.singleton(coreDescriptor), config, null);
-    coreContainer.initialize();
-    
-    ...
-    
-    // retrieve a SolrClient
-    try (SolrClient solrClient = coreContainer.getSolrClient(myCore)) {
-        solrClient.ping().getStatus();
-    }    
+```java
+class Demo { static void main(String... args) {
 
+// Create a core-descriptor
+CoreDescriptor myCore = new SimpleCoreDescriptor("my-core", Paths.get("/path/to/solr-conf"));
+
+// Create SolrCoreContainer and register Core
+EmbeddedCoreContainerConfiguration config = new EmbeddedCoreContainerConfiguration();
+config.setHome(solrHome);
+config.setDeleteOnShutdown(true);
+
+SolrCoreContainer coreContainer = new EmbeddedCoreContainer(Collections.singleton(coreDescriptor), config, null);
+coreContainer.initialize();
+
+// ...
+
+// retrieve a SolrClient
+try (SolrClient solrClient = coreContainer.getSolrClient(myCore)) {
+    solrClient.ping().getStatus();
+}   
+
+}}
 ```
-
 
 ### Embedded Mode
 
 When using `solrlib-embedded`, an embedded CoreContainer will be launched. There is no direct
 access to the Solr webservices or the admin-ui, you can retrieve an `SolrClient` to execute
 queries in your code.
+
+Upon `initialize()`, all registered `CoreDescriptors` will be deployed. 
+`EmbeddedCoreContainerConfiguration.setDeleteOnShutdown` controls if solr-home will be deleted upon
+shutdown.
 
 ### Standalone Mode
 
