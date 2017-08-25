@@ -23,6 +23,7 @@ import io.redlink.solrlib.cloud.SolrCloudConnectorConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,6 +40,7 @@ import java.util.Set;
 @Configuration
 @ConditionalOnClass({SolrCoreContainer.class, SolrCloudConnector.class})
 @EnableConfigurationProperties(SolrLibProperties.class)
+@AutoConfigureBefore({SolrLibStandaloneAutoconfiguration.class, SolrLibEmbeddedAutoconfiguration.class})
 public class SolrLibCloudAutoconfiguration {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
