@@ -13,6 +13,14 @@ If later, you want to switch to using an extenal Solr Server (classic or SolrClo
 
 ## Usage
 
+```xml
+<dependency>
+    <groupId>io.redlink.solrlib</groupId>
+    <artifactId>solrlib</artifactId>
+    <version>${VERSION}</version>
+</dependency>
+```
+
 **SolrLib** is split up in several modules:
 * `solrlib-api`
 * `solrlib-embedded`
@@ -25,8 +33,6 @@ For convenience, there is also a `solrlib-spring-boot-autoconfigure` module for 
 Cores/collections are registered by using a `SolrCoreDescriptor`, e.g. a `SimpleCoreDescriptor`:
 
 ```java
-class Demo { static void main(String... args) {
-
 // Create a core-descriptor
 CoreDescriptor myCore = new SimpleCoreDescriptor("my-core", Paths.get("/path/to/solr-conf"));
 
@@ -43,9 +49,7 @@ coreContainer.initialize();
 // retrieve a SolrClient
 try (SolrClient solrClient = coreContainer.getSolrClient(myCore)) {
     solrClient.ping().getStatus();
-}   
-
-}}
+}
 ```
 
 ### Embedded Mode
@@ -74,36 +78,77 @@ using `CloudSolrClient.uploadConfig`.
 **NOTE:** adding runtime-libraries from the `lib` folder is currently not supported!
 
 ### Spring Boot
+
+To use **SolrLib** in a Spring Boot environment, add the following dependencies to your project:
+```xml
+<dependencies>
+    <!-- Spring Boot Autoconfiguration for SolrLib -->
+    <dependency>
+        <groupId>io.redlink.solrlib</groupId>
+        <artifactId>solrlib-spring-boot-autoconfigure</artifactId>
+        <version>${solrlib.version}</version>
+    </dependency>
+    <!-- at least on implementation for runtime -->
+    <dependency>
+        <groupId>io.redlink.solrlib</groupId>
+        <artifactId>solrlib-embedded</artifactId>
+        <version>${solrlib.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.redlink.solrlib</groupId>
+        <artifactId>solrlib-standalone</artifactId>
+        <version>${solrlib.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.redlink.solrlib</groupId>
+        <artifactId>solrlib-cloud</artifactId>
+        <version>${solrlib.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+```
+
+The autoconfiguration checks solrlib with the following priority, the first one to match will be used:
+
+1. **SolrLib Cloud** (requires `solrlib.zk-connection` to be set)
+1. **SolrLib Standalone** (requires `solrlib.base-url` to be set)
+1. **SolrLib Embedded** (fallback)
+
+All supported configuration properties for **SolrLib**:
+
+```properties
+# Used by embedded and standalone
+#      the ${SOLR_HOME} directory
+solrlib.home = /path/to/solr/home
     
-    # Used by embedded and standalone
-    #      the ${SOLR_HOME} directory
-    solrlib.home = /path/to/solr/home
+# This will trigger using solrlib-standalone if available on the classpath
+#      base-url for all solr requests
+solrlib.base-url = http://localhost:8983/solr
     
-    # This will trigger using solrlib-standalone if available on the classpath
-    #      base-url for all solr requests
-    solrlib.base-url = http://localhost:8983/solr
+# This will trigger using solrlib-cloud if available on the classpath
+#       ZooKeeper connection string
+solrlib.zk-connection = zookeeper1:8121,zookeeper2:8121
     
-    # This will trigger using solrlib-cloud if available on the classpath
-           ZooKeeper connection string
-    solrlib.zk-connection = zookeeper1:8121,zookeeper2:8121
+# Only used by standalone and cloud
+#      prefix for the remote collection names, 
+#      to avoid name-clashes on shared servers. 
+solrlib.collection-prefix = 
     
-    # Only used by standalone and cloud
-    #      prefix for the remote collection names, 
-    #      to avoid name-clashes on shared servers. 
-    solrlib.collection-prefix = 
-    
-    # Only relevant in cloud-mode
-    solrlib.max-shards-per-node = 1
+# Only relevant in cloud-mode
+solrlib.max-shards-per-node = 1
         
-    # Only used by standalone and cloud
-    #      option to disable automatic configuration update/deployment
-    #      to remote servers. You might not have the karma to do so.
-    solrlib.deploy-cores = true
+# Only used by standalone and cloud
+#      option to disable automatic configuration update/deployment
+#      to remote servers. You might not have the karma to do so.
+solrlib.deploy-cores = true
     
-    # Only used by embedded
-    #      option to delete the solrlib-home upon shutdown
-    solrlib.delete-on-shutdown = false
-    
+# Only used by embedded
+#      option to delete the solrlib-home upon shutdown
+solrlib.delete-on-shutdown = false
+```
+
 ## License
 
 **SolrLib** is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
