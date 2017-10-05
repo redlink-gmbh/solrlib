@@ -181,6 +181,25 @@
                             <goal>jar</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>aggreagte</id>
+                        <goals>
+                            <goal>aggregate-jar</goal>
+                        </goals>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <groups>
+                                <group>
+                                    <title>SolrLib</title>
+                                    <packages>io.redlink.solrlib:io.redlink.solrlib.embedded:io.redlink.solrlib.standalone:io.redlink.solrlib.cloud</packages>
+                                </group>
+                                <group>
+                                    <title>Spring Boot Autoconfiguration</title>
+                                    <packages>io.redlink.solrlib.spring.*</packages>
+                                </group>
+                            </groups>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
