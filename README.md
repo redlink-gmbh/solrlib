@@ -2,13 +2,15 @@
 _an easy to use solr client, that works embedded or with SolrServer and SolrCloud._
 
 [![Build Status](https://travis-ci.org/redlink-gmbh/solrlib.svg?branch=master)](https://travis-ci.org/redlink-gmbh/solrlib)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.redlink.solrlib/solrlib/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.redlink.solrlib/solrlib)
+[![Maven Central](https://img.shields.io/maven-central/v/io.redlink.solrlib/solrlib.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22io.redlink.solrlib%22)
+[![Sonatype (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/io.redlink.solrlib/solrlib.svg)](https://oss.sonatype.org/#nexus-search;gav~io.redlink.solrlib~solrlib~~~)
+[![Javadocs](https://www.javadoc.io/badge/io.redlink.solrlib/solrlib.svg)](https://www.javadoc.io/doc/io.redlink.solrlib/solrlib)
 
 **SolrLib** aims to ease the use of [Apache Solr](http://lucene.apache.org/solr/) within Java applications.
 
 Often you want to internally use Solr - **SolrLib** helps launching up an embedded CoreContainer. The big advantage: You
 keep the core/collection configuration where it belongs - next to the code.
-If later, you want to switch to using an extenal Solr Server (classic or SolrCloud), you can do so without code-changes.
+If later, you want to switch to using an external Solr Server (classic or SolrCloud), you can do so without code-changes.
 **SolrLib** will even _deploy_/_update_ your collections on the remote instances.
 
 ## Usage
