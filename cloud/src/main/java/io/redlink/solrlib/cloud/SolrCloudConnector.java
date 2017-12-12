@@ -23,6 +23,8 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
+import org.apache.solr.client.solrj.response.CollectionAdminResponse;
+import org.apache.solr.common.params.CollectionParams.CollectionAction;
 import org.apache.solr.common.util.NamedList;
 
 import java.io.IOException;
@@ -53,9 +55,11 @@ public class SolrCloudConnector extends SolrCoreContainer {
     protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         final Path sharedLibs = Files.createTempDirectory("solrSharedLibs");
         try (CloudSolrClient client = createSolrClient()) {
-            final NamedList<Object> list = client.request(CollectionAdminRequest.listCollections());
+            //NOTE: do not use as this breaks compatibility with lower Solr Versions
+            //final List<String> existingCollections = CollectionAdminRequest.listCollections(client);
             @SuppressWarnings("unchecked")
-            final List<String> existingCollections = (List<String>) list.get("collections");
+            final List<String> existingCollections =  (List<String>)new CollectionAdminRequest.List()
+                    .process(client).getResponse().get("collections");
 
             for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
                 final String coreName = coreDescriptor.getCoreName();
