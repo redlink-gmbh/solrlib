@@ -127,7 +127,9 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
         availableCores.values().forEach(coreDescriptor -> {
             final String coreName = coreDescriptor.getCoreName();
             try (SolrClient solrClient = createSolrClient(coreName)) {
-                final Object lastModified = ((NamedList) CoreAdminRequest.getStatus(coreName, solrClient).getCoreStatus(coreName).get("index")).get("lastModified");
+                final NamedList<Object> coreStatus = CoreAdminRequest.getStatus(coreName, solrClient).getCoreStatus(coreName);
+                final NamedList<Object> indexStatus = coreStatus == null ? null : (NamedList<Object>)coreStatus.get("index");
+                final Object lastModified = indexStatus == null? null : indexStatus.get("lastModified");
                 // lastModified is null if there was never a update
                 scheduleCoreInit(executorService, coreDescriptor, lastModified == null);
             } catch (SolrServerException | IOException e) {
