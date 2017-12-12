@@ -18,10 +18,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <prerequisites>
-        <maven>3.0.4</maven>
-    </prerequisites>
-
     <groupId>io.redlink.solrlib</groupId>
     <artifactId>solrlib</artifactId>
     <version>0.5.0-SNAPSHOT</version>
@@ -161,8 +157,10 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -170,9 +168,8 @@
                     <optimize>true</optimize>
                 </configuration>
             </plugin>
-            <!-- plugin>
+            <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
@@ -181,30 +178,10 @@
                             <goal>jar</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>aggreagte</id>
-                        <goals>
-                            <goal>aggregate-jar</goal>
-                        </goals>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <groups>
-                                <group>
-                                    <title>SolrLib</title>
-                                    <packages>io.redlink.solrlib:io.redlink.solrlib.embedded:io.redlink.solrlib.standalone:io.redlink.solrlib.cloud</packages>
-                                </group>
-                                <group>
-                                    <title>Spring Boot Autoconfiguration</title>
-                                    <packages>io.redlink.solrlib.spring.*</packages>
-                                </group>
-                            </groups>
-                        </configuration>
-                    </execution>
                 </executions>
-            </plugin -->
+            </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -219,12 +196,37 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.0.0-M1</version>
+                    <configuration>
+                        <rules>
+                            <dependencyConvergence />
+                        </rules>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.19.1</version>
+                    <version>2.20.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.7.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.6</version>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.20.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
@@ -292,6 +294,31 @@
             <id>release</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>aggregate</id>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
+                                <phase>verify</phase>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <groups>
+                                        <group>
+                                            <title>SolrLib</title>
+                                            <packages>io.redlink.solrlib:io.redlink.solrlib.embedded:io.redlink.solrlib.standalone:io.redlink.solrlib.cloud</packages>
+                                        </group>
+                                        <group>
+                                            <title>Spring Boot Autoconfiguration</title>
+                                            <packages>io.redlink.solrlib.spring.*</packages>
+                                        </group>
+                                    </groups>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <executions>
