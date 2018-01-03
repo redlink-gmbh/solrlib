@@ -73,9 +73,19 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
         }
 
         final Path solrHome = this.solrHome.toAbsolutePath();
+        if (Files.isDirectory(solrHome)) {
+            log.trace("solr-home exists: {}", solrHome);
+        } else {
+            Files.createDirectories(solrHome);
+            log.debug("Created solr-home: {}", solrHome);
+        }
         final Path lib = solrHome.resolve("lib");
-        Files.createDirectories(solrHome);
-        Files.createDirectories(lib);
+        if (Files.isDirectory(lib)) {
+            log.trace("lib-directory exists: {}", lib);
+        } else {
+            Files.createDirectories(lib);
+            log.debug("Created solr-lib directory: {}", lib);
+        }
 
         final Path solrXml = solrHome.resolve("solr.xml");
         if (!Files.exists(solrXml)) {
@@ -86,6 +96,8 @@ public class EmbeddedCoreContainer extends SolrCoreContainer {
                 writer.printf("  <str name=\"%s\">%s</str>%n", "sharedLib", solrHome.relativize(lib));
                 writer.println("</solr>");
             }
+        } else {
+            log.trace("found solr.xml: {}", solrXml);
         }
 
         for (SolrCoreDescriptor coreDescriptor : coreDescriptors) {
