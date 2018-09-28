@@ -22,15 +22,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.ZkClientClusterStateProvider;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
-import org.apache.solr.client.solrj.response.CollectionAdminResponse;
-import org.apache.solr.common.params.CollectionParams.CollectionAction;
 import org.apache.solr.common.util.NamedList;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -75,8 +76,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
                     final Path tmp = Files.createTempDirectory(coreName);
                     try {
                         coreDescriptor.initCoreDirectory(tmp, sharedLibs);
-
-                        client.uploadConfig(tmp.resolve("conf"), remoteName);
+                        uploadConfig(remoteName, tmp);
 
                         if (!existingCollections.contains(remoteName)) {
                             // TODO: Check and log the response
@@ -126,14 +126,31 @@ public class SolrCloudConnector extends SolrCoreContainer {
             PathUtils.deleteRecursive(sharedLibs);
         }
     }
+    /*
+     * TODO @jfrank: This needs to be tested against a real Solr Cloud
+     */
+    private void uploadConfig(final String remoteName, final Path coreDict) throws IOException {
+        ZkClientClusterStateProvider zkClient = null;
+        try {
+            zkClient = createZkClient();
+            zkClient.uploadConfig(coreDict.resolve("conf"), remoteName);
+        } finally {
+            try {
+                zkClient.close();
+            } catch (IOException e) { /*ignore*/}
+        }
+    }
+    
+    protected ZkClientClusterStateProvider createZkClient() {
+        return new ZkClientClusterStateProvider(config.getZkConnection());
+    }
 
     protected String createRemoteName(String coreName) {
         return prefix + coreName;
     }
 
     protected CloudSolrClient createSolrClient() {
-        return new CloudSolrClient.Builder()
-                .withZkHost(config.getZkConnection())
+        return new CloudSolrClient.Builder(Collections.singletonList(config.getZkConnection()),Optional.empty())
                 .build();
     }
 
