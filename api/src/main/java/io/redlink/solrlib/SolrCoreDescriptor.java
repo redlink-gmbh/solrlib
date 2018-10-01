@@ -59,7 +59,8 @@ public interface SolrCoreDescriptor {
         )) {
             final Optional<Path> coreProperties = pathStream.min(Comparator.comparingInt(Path::getNameCount));
             final Path sourceDir = coreProperties
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid solrCoreBundle '" + solrCoreBundle + "': no core.properties found"))
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Invalid solrCoreBundle '" + solrCoreBundle + "': no core.properties found"))
                     .getParent();
 
             PathUtils.copyRecursive(sourceDir, solrCoreDir);
