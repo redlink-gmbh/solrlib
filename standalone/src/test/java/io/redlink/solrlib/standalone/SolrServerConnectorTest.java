@@ -16,8 +16,33 @@
 
 package io.redlink.solrlib.standalone;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.UUID;
+
 /**
  */
 public class SolrServerConnectorTest {
 
+    @Test
+    public void testCreateRemoteName() {
+        String[] coreNames = {"core1", "collection", "foo"};
+
+        SolrServerConnectorConfiguration configPlain = new SolrServerConnectorConfiguration();
+        SolrServerConnector solrServerConnector1 = new SolrServerConnector(Collections.emptySet(), configPlain);
+        for (String coreName : coreNames) {
+            Assert.assertThat(solrServerConnector1.createRemoteName(coreName), Matchers.is(coreName));
+        }
+
+        final String prefix = UUID.randomUUID().toString() + "_";
+        SolrServerConnectorConfiguration configPrefix = new SolrServerConnectorConfiguration();
+        configPrefix.setPrefix(prefix);
+        SolrServerConnector solrServerConnector2 = new SolrServerConnector(Collections.emptySet(), configPrefix);
+        for (String coreName : coreNames) {
+            Assert.assertThat(solrServerConnector2.createRemoteName(coreName), Matchers.is(prefix + coreName));
+        }
+    }
 }

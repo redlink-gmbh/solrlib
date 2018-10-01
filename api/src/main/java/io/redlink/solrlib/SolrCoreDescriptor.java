@@ -26,7 +26,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * A SolrCoreDescriptor.
@@ -47,20 +49,22 @@ public interface SolrCoreDescriptor {
 
     default void onCoreStarted(SolrClient solrClient) throws IOException, SolrServerException {}
 
+    @SuppressWarnings("squid:S3725")
     static void unpackSolrCoreDir(Path solrCoreBundle, Path solrCoreDir) throws IOException {
         LoggerFactory.getLogger(SolrCoreDescriptor.class).debug("Unpacking SolrCore directory {} to {}", solrCoreBundle, solrCoreDir);
-        final Optional<Path> coreProperties =
-                Files.find(solrCoreBundle, Integer.MAX_VALUE,
-                        (p, a) -> Files.isRegularFile(p)
-                                && Files.isReadable(p)
-                                && "core.properties".equals(String.valueOf(p.getFileName()))
-                )
-                        .sorted((a,b)-> Integer.compare(a.getNameCount(), b.getNameCount()))
-                        .findFirst();
-        final Path sourceDir = coreProperties.orElseThrow(() -> new IllegalArgumentException("Invalid solrCoreBundle '" + solrCoreBundle + "': no core.properties found"))
-                .getParent();
+        try (Stream<Path> pathStream = Files.find(solrCoreBundle, Integer.MAX_VALUE,
+                (p, a) -> Files.isRegularFile(p)
+                        && Files.isReadable(p)
+                        && "core.properties".equals(String.valueOf(p.getFileName()))
+        )) {
+            final Optional<Path> coreProperties = pathStream.min(Comparator.comparingInt(Path::getNameCount));
+            final Path sourceDir = coreProperties
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Invalid solrCoreBundle '" + solrCoreBundle + "': no core.properties found"))
+                    .getParent();
 
-        PathUtils.copyRecursive(sourceDir, solrCoreDir);
+            PathUtils.copyRecursive(sourceDir, solrCoreDir);
+        }
     }
 
     static void unpackSolrCoreZip(Path solrCoreBundle, Path solrHome) throws IOException {
