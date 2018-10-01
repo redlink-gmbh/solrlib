@@ -23,8 +23,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
-import org.apache.solr.client.solrj.response.CollectionAdminResponse;
-import org.apache.solr.common.params.CollectionParams.CollectionAction;
 import org.apache.solr.common.util.NamedList;
 
 import java.io.IOException;
@@ -55,8 +53,9 @@ public class SolrCloudConnector extends SolrCoreContainer {
     protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         final Path sharedLibs = Files.createTempDirectory("solrSharedLibs");
         try (CloudSolrClient client = createSolrClient()) {
-            //NOTE: do not use as this breaks compatibility with lower Solr Versions
-            //final List<String> existingCollections = CollectionAdminRequest.listCollections(client);
+            /* NOTE: do not use as this breaks compatibility with lower Solr Versions
+             * <code>final List<String> existingCollections = CollectionAdminRequest.listCollections(client);</code>
+             */
             @SuppressWarnings("unchecked")
             final List<String> existingCollections =  (List<String>)new CollectionAdminRequest.List()
                     .process(client).getResponse().get("collections");
@@ -119,7 +118,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
         } catch (SolrServerException e) {
             log.error("Could not list existing collections: {}", e.getMessage(), e);
             throw new IOException("Could not list existing collections", e);
-        } catch (final Throwable t) {
+        } catch (final Exception t) {
             log.error("Unexpected {} during init(): {}", t.getClass().getSimpleName(), t.getMessage(), t);
             throw t;
         } finally {

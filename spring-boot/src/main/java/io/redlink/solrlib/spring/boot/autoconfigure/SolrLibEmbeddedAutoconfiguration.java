@@ -20,8 +20,10 @@ import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import io.redlink.solrlib.embedded.EmbeddedCoreContainer;
 import io.redlink.solrlib.embedded.EmbeddedCoreContainerConfiguration;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -35,7 +37,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 @Configuration
@@ -49,9 +50,9 @@ public class SolrLibEmbeddedAutoconfiguration {
     private final SolrLibProperties props;
     private final Set<SolrCoreDescriptor> coreDescriptors;
 
-    public SolrLibEmbeddedAutoconfiguration(SolrLibProperties props, Optional<Set<SolrCoreDescriptor>> coreDescriptors) {
+    public SolrLibEmbeddedAutoconfiguration(SolrLibProperties props, ObjectProvider<Set<SolrCoreDescriptor>> coreDescriptors) {
         this.props = props;
-        this.coreDescriptors = coreDescriptors.orElseGet(Collections::emptySet);
+        this.coreDescriptors = ObjectUtils.defaultIfNull(coreDescriptors.getIfAvailable(), Collections.emptySet());
     }
 
     @Bean(initMethod = "initialize", destroyMethod = "shutdown")
