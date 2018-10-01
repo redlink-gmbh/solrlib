@@ -20,8 +20,10 @@ import io.redlink.solrlib.SolrCoreContainer;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import io.redlink.solrlib.cloud.SolrCloudConnector;
 import io.redlink.solrlib.cloud.SolrCloudConnectorConfiguration;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -34,7 +36,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 @Configuration
@@ -48,9 +49,9 @@ public class SolrLibCloudAutoconfiguration {
     private final SolrLibProperties props;
     private final Set<SolrCoreDescriptor> coreDescriptors;
 
-    public SolrLibCloudAutoconfiguration(SolrLibProperties props, Optional<Set<SolrCoreDescriptor>> coreDescriptors) {
+    public SolrLibCloudAutoconfiguration(SolrLibProperties props, ObjectProvider<Set<SolrCoreDescriptor>> coreDescriptors) {
         this.props = props;
-        this.coreDescriptors = coreDescriptors.orElseGet(Collections::emptySet);
+        this.coreDescriptors = ObjectUtils.defaultIfNull(coreDescriptors.getIfAvailable(), Collections.emptySet());
     }
 
 
