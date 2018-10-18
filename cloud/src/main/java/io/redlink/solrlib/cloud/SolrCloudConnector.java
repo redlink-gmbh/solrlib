@@ -127,18 +127,10 @@ public class SolrCloudConnector extends SolrCoreContainer {
             PathUtils.deleteRecursive(sharedLibs);
         }
     }
-    /*
-     * TODO @jfrank: This needs to be tested against a real Solr Cloud
-     */
+
     private void uploadConfig(final String remoteName, final Path coreDict) throws IOException {
-        ZkClientClusterStateProvider zkClient = null;
-        try {
-            zkClient = createZkClient();
+        try (ZkClientClusterStateProvider zkClient = createZkClient()){
             zkClient.uploadConfig(coreDict.resolve("conf"), remoteName);
-        } finally {
-            try {
-                zkClient.close();
-            } catch (IOException e) { /*ignore*/}
         }
     }
     
