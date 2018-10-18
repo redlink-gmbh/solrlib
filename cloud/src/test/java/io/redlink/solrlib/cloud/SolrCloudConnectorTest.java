@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 import io.redlink.solrlib.SolrCoreDescriptor;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.ZkClientClusterStateProvider;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.hamcrest.Matchers;
@@ -89,18 +90,20 @@ public class SolrCloudConnectorTest {
             config.setZkConnection(zkConnection);
 
             final CloudSolrClient solrClient = mock(CloudSolrClient.class);
+            final ZkClientClusterStateProvider zkClient = mock(ZkClientClusterStateProvider.class);
             final SimpleOrderedMap<Object> collectionsListResponse = new SimpleOrderedMap<>();
             collectionsListResponse.add("collections", Collections.singletonList("core1"));
 
             when(solrClient.request(any(CollectionAdminRequest.List.class), eq(null))).thenReturn(collectionsListResponse);
-
+            
             final SolrCoreDescriptor solrCoreDescriptor1 = mock(SolrCoreDescriptor.class);
             when(solrCoreDescriptor1.getCoreName()).thenReturn("core1");
             final SolrCoreDescriptor solrCoreDescriptor2 = mock(SolrCoreDescriptor.class);
             when(solrCoreDescriptor2.getCoreName()).thenReturn("core2");
             final SolrCloudConnector connector = spy(new SolrCloudConnector(Sets.newHashSet(solrCoreDescriptor1, solrCoreDescriptor2), config, exec));
             when(connector.createSolrClient()).thenReturn(solrClient);
-
+            when(connector.createZkClient()).thenReturn(zkClient);
+            
             connector.initialize();
             assertNotNull(connector.getSolrClient(solrCoreDescriptor1));
             assertNotNull(connector.getSolrClient(solrCoreDescriptor2));
