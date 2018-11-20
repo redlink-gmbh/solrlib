@@ -20,9 +20,11 @@ jobs:
         SONAR_PARAMS="$SONAR_PARAMS -Dsonar.pullrequest.provider=github";
         SONAR_PARAMS="$SONAR_PARAMS -Dsonar.pullrequest.github.repository=${TRAVIS_REPO_SLUG}";
       else
-        SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.name=${TRAVIS_BRANCH}";
         if  [ -z "$TRAVIS_TAG" -a "${TRAVIS_BRANCH:-master}" != "master" ]; then
-          SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.target=develop";
+          SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.name=${TRAVIS_BRANCH}";
+          if  [ -z "$TRAVIS_TAG" -a "${TRAVIS_BRANCH:-develop}" != "develop" ]; then
+            SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.target=develop";
+          fi;
         fi;
       fi;
     - echo "$SONAR_PARAMS"
