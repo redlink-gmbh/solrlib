@@ -146,7 +146,6 @@ public class SolrCloudConnector extends SolrCoreContainer {
     }
 
     protected CloudSolrClient createSolrClient() {
-        new CloudSolrClient.Builder().build();
         return new CloudSolrClient.Builder()
                 .withZkHost(config.getZkConnection())
                 .build();
