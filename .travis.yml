@@ -10,6 +10,8 @@ script:
 jobs:
   include:
   - stage: sonarcloud
+    git:
+      depth: false
     jdk: openjdk8
     script:
     - SONAR_PARAMS="";
