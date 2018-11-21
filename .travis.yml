@@ -10,6 +10,8 @@ script:
 jobs:
   include:
   - stage: sonarcloud
+    git:
+      depth: false
     jdk: openjdk8
     script:
     - SONAR_PARAMS="";
@@ -19,12 +21,16 @@ jobs:
         SONAR_PARAMS="$SONAR_PARAMS -Dsonar.pullrequest.base=${TRAVIS_BRANCH}";
         SONAR_PARAMS="$SONAR_PARAMS -Dsonar.pullrequest.provider=github";
         SONAR_PARAMS="$SONAR_PARAMS -Dsonar.pullrequest.github.repository=${TRAVIS_REPO_SLUG}";
-      elif [ -z "$TRAVIS_TAG" ]; then
-        SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.name=${TRAVIS_BRANCH}";
-        if [ "${TRAVIS_BRANCH:-master}" != "master" ]; then
-          SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.target=develop";
+      else
+        if  [ -z "$TRAVIS_TAG" -a "${TRAVIS_BRANCH:-master}" != "master" ]; then
+          SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.name=${TRAVIS_BRANCH}";
+          if  [ -z "$TRAVIS_TAG" -a "${TRAVIS_BRANCH:-develop}" != "develop" ]; then
+            SONAR_PARAMS="$SONAR_PARAMS -Dsonar.branch.target=develop";
+          fi;
         fi;
       fi;
+    - echo "$SONAR_PARAMS"
     - mvn -B verify
+      -DforkCount=0
       -Dsonar.login="${SONAR_TOKEN}"
       $SONAR_PARAMS

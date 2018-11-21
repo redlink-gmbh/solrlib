@@ -35,9 +35,13 @@ import java.util.stream.Stream;
  */
 public interface SolrCoreDescriptor {
 
-    default int getNumShards() { return 1; }
+    default int getNumShards() {
+        return 1;
+    }
 
-    default int getReplicationFactor() { return 1; }
+    default int getReplicationFactor() {
+        return 1;
+    }
 
     default String getCoreName() {
         return getClass().getSimpleName();

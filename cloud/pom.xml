@@ -27,6 +27,9 @@
     <artifactId>solrlib-cloud</artifactId>
     <name>SolrLib :: SolrCloud Backend</name>
 
+    <properties>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.redlink.solrlib</groupId>
@@ -57,9 +60,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-    </properties>
 
     <build>
         <plugins>

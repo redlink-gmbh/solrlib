@@ -55,6 +55,24 @@
         </developer>
     </developers>
 
+    <modules>
+        <module>api</module>
+
+        <module>embedded</module>
+        <module>standalone</module>
+        <module>cloud</module>
+
+        <module>spring-boot</module>
+        <module>spring-boot-it</module>
+    </modules>
+
+    <scm>
+        <connection>scm:git:https://github.com/redlink-gmbh/solrlib.git</connection>
+        <developerConnection>scm:git:git@github.com:redlink-gmbh/solrlib.git</developerConnection>
+        <url>https://github.com/redlink-gmbh/solrlib/src</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -80,24 +98,6 @@
         <skipTests>false</skipTests>
         <skipITs>false</skipITs>
     </properties>
-
-    <modules>
-        <module>api</module>
-
-        <module>embedded</module>
-        <module>standalone</module>
-        <module>cloud</module>
-
-        <module>spring-boot</module>
-        <module>spring-boot-it</module>
-    </modules>
-
-    <scm>
-        <connection>scm:git:https://github.com/redlink-gmbh/solrlib.git</connection>
-        <developerConnection>scm:git:git@github.com:redlink-gmbh/solrlib.git</developerConnection>
-        <url>https://github.com/redlink-gmbh/solrlib/src</url>
-        <tag>HEAD</tag>
-    </scm>
 
     <dependencyManagement>
         <dependencies>

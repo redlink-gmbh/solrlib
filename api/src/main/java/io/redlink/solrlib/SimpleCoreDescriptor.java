@@ -32,7 +32,8 @@ public class SimpleCoreDescriptor implements SolrCoreDescriptor {
 
     private final String coreName;
     private final Path coreBundle;
-    private int numShards, replicationFactor;
+    private int numShards;
+    private int replicationFactor;
 
     public SimpleCoreDescriptor(String coreName, Path coreBundle) {
         this.coreName = coreName;
@@ -47,6 +48,7 @@ public class SimpleCoreDescriptor implements SolrCoreDescriptor {
     }
 
     @Override
+    @SuppressWarnings("squid:S3725")
     public void initCoreDirectory(Path coreDir, Path sharedLibDir) throws IOException {
         log.debug("{}: initializing core-dir {}", coreName, coreDir);
         if (Files.isDirectory(coreBundle)) {

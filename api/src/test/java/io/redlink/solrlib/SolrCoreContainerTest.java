@@ -30,8 +30,8 @@ import static org.junit.Assert.assertNull;
 
 /**
  */
+@SuppressWarnings("squid:S2925")
 public class SolrCoreContainerTest {
-
 
     @Test
     public void testInitialize() throws Exception {
