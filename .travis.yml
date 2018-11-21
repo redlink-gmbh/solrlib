@@ -31,6 +31,5 @@ jobs:
       fi;
     - echo "$SONAR_PARAMS"
     - mvn -B verify
-      -DforkCount=0
       -Dsonar.login="${SONAR_TOKEN}"
       $SONAR_PARAMS
