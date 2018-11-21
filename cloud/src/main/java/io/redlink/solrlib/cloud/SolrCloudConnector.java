@@ -29,7 +29,9 @@ import org.apache.solr.common.util.NamedList;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -146,8 +148,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
     }
 
     protected CloudSolrClient createSolrClient() {
-        return new CloudSolrClient.Builder()
-                .withZkHost(config.getZkConnection())
+        return new CloudSolrClient.Builder(Collections.singletonList(config.getZkConnection()), Optional.empty())
                 .build();
     }
 
