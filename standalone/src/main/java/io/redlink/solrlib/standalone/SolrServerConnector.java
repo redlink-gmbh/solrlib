@@ -50,7 +50,8 @@ public class SolrServerConnector extends SolrCoreContainer {
         this(coreDescriptors, configuration, null);
     }
 
-    public SolrServerConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrServerConnectorConfiguration configuration, ExecutorService executorService) {
+    public SolrServerConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrServerConnectorConfiguration configuration,
+                               ExecutorService executorService) {
         super(coreDescriptors, executorService);
         this.configuration = configuration;
         prefix = StringUtils.defaultString(configuration.getPrefix());
@@ -59,6 +60,7 @@ public class SolrServerConnector extends SolrCoreContainer {
     }
 
     @Override
+    @SuppressWarnings("squid:S3776")
     protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         Preconditions.checkState(initialized.compareAndSet(false, true));
         Preconditions.checkArgument(Objects.nonNull(solrBaseUrl));
@@ -92,17 +94,16 @@ public class SolrServerConnector extends SolrCoreContainer {
 
                     // Create or reload the core
                     if (CoreAdminRequest.getStatus(remoteName, solrClient).getStartTime(remoteName) == null) {
-                        final CoreAdminResponse adminResponse = CoreAdminRequest.createCore(remoteName, coreHome.toAbsolutePath().toString(), solrClient);
+                        final CoreAdminResponse adminResponse = CoreAdminRequest
+                                .createCore(remoteName, coreHome.toAbsolutePath().toString(), solrClient);
                     } else {
-                        final CoreAdminResponse adminResponse = CoreAdminRequest.reloadCore(remoteName, solrClient);
+                        final CoreAdminResponse adminResponse = CoreAdminRequest
+                                .reloadCore(remoteName, solrClient);
                     }
                     // schedule client-side core init
-                    if (findInNamedList(CoreAdminRequest.getStatus(remoteName, solrClient).getCoreStatus(remoteName),
-                            "index", "lastModified") == null) {
-                        scheduleCoreInit(executorService, coreDescriptor, true);
-                    } else {
-                        scheduleCoreInit(executorService, coreDescriptor, false);
-                    }
+                    final boolean isNewCore = findInNamedList(CoreAdminRequest.getStatus(remoteName, solrClient).getCoreStatus(remoteName),
+                            "index", "lastModified") == null;
+                    scheduleCoreInit(executorService, coreDescriptor, isNewCore);
 
                     availableCores.put(coreName, coreDescriptor);
                 }
@@ -118,7 +119,9 @@ public class SolrServerConnector extends SolrCoreContainer {
                     final String remoteName = createRemoteName(coreName);
                     if (CoreAdminRequest.getStatus(remoteName, solrClient).getStartTime(remoteName) == null) {
                         // Core does not exists
-                        log.warn("Collection {} (remote: {}) not available in Solr '{}' but deployCores is set to false", coreName, remoteName, solrBaseUrl);
+                        log.warn("Collection {} (remote: {}) not available in Solr '{}' " +
+                                        "but deployCores is set to false",
+                                coreName, remoteName, solrBaseUrl);
                     } else {
                         log.debug("Collection {} exists in Solr '{}' as {}", coreName, solrBaseUrl, remoteName);
                         scheduleCoreInit(executorService, coreDescriptor, false);

@@ -40,8 +40,8 @@ public abstract class SolrCoreContainer {
     private final CountDownLatch startupComplete;
     private final Map<String, CountDownLatch> coreInitialized;
     private final AtomicBoolean initStarted;
-    private Throwable initException = null;
-    protected final Map<String, Throwable> coreInitException = new HashMap<>();
+    private Exception initException = null;
+    protected final Map<String, Throwable> coreInitExceptions = new HashMap<>();
     protected final Set<SolrCoreDescriptor> coreDescriptors;
     protected final Map<String, SolrCoreDescriptor> availableCores = new HashMap<>();
 
@@ -53,15 +53,16 @@ public abstract class SolrCoreContainer {
         this.coreDescriptors = coreDescriptors;
     }
 
+    @SuppressWarnings("squid:S3776")
     public final void initialize() {
         if (initStarted.compareAndSet(false, true)) {
             final long initStart = System.currentTimeMillis();
             log.debug("Initializing SolrCoreContainer");
-            final ExecutorService executorService = this.executorService.orElseGet(Executors::newSingleThreadExecutor);
-            executorService
+            final ExecutorService lEexecutorService = this.executorService.orElseGet(Executors::newSingleThreadExecutor);
+            lEexecutorService
                     .execute(() -> {
                         try {
-                            init(executorService);
+                            init(lEexecutorService);
                         } catch (IOException | SolrServerException e) {
                             if (log.isDebugEnabled()) {
                                 log.error("Error while initializing SolrCoreContainer: {}", e.getMessage(), e);
@@ -69,7 +70,7 @@ public abstract class SolrCoreContainer {
                                 log.error("Error while initializing SolrCoreContainer: {}", e.getMessage());
                             }
                             initException = e;
-                        } catch (final Throwable t) {
+                        } catch (final Exception t) {
                             if (log.isDebugEnabled()) {
                                 log.error("Unexpected Error while initializing SolrCoreContainer: {}", t.getMessage(), t);
                             } else {
@@ -81,7 +82,7 @@ public abstract class SolrCoreContainer {
                             startupComplete.countDown();
                             log.debug("SolrCoreContainer initialized in {}ms", initDuration);
                             if (!this.executorService.isPresent()) {
-                                executorService.shutdown();
+                                lEexecutorService.shutdown();
                             }
                         }
                     });
@@ -102,18 +103,7 @@ public abstract class SolrCoreContainer {
         executorService.execute(() -> {
             try {
                 awaitInitCompletion();
-                try (SolrClient solrClient = createSolrClient(coreDescriptor.getCoreName())) {
-                    if (newCore) {
-                        coreDescriptor.onCoreCreated(solrClient);
-                    }
-                    coreDescriptor.onCoreStarted(solrClient);
-                } catch (IOException | SolrServerException e) {
-                    if (log.isDebugEnabled()) {
-                        log.warn("Error while initializing core {}: {}", coreDescriptor.getCoreName(), e.getMessage(), e);
-                    }
-                    //noinspection ThrowableResultOfMethodCallIgnored
-                    coreInitException.put(coreDescriptor.getCoreName(), e);
-                }
+                initCore(coreDescriptor, newCore);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IllegalStateException("Interrupted!", e);
@@ -121,6 +111,21 @@ public abstract class SolrCoreContainer {
                 coreLatch.countDown();
             }
         });
+    }
+
+    private void initCore(SolrCoreDescriptor coreDescriptor, boolean isNewCore) {
+        try (SolrClient solrClient = createSolrClient(coreDescriptor.getCoreName())) {
+            if (isNewCore) {
+                coreDescriptor.onCoreCreated(solrClient);
+            }
+            coreDescriptor.onCoreStarted(solrClient);
+        } catch (IOException | SolrServerException e) {
+            if (log.isDebugEnabled()) {
+                log.warn("Error while initializing core {}: {}", coreDescriptor.getCoreName(), e.getMessage(), e);
+            }
+            //noinspection ThrowableResultOfMethodCallIgnored
+            coreInitExceptions.put(coreDescriptor.getCoreName(), e);
+        }
     }
 
     public void shutdown() throws IOException {
@@ -145,7 +150,7 @@ public abstract class SolrCoreContainer {
             }
 
             // Check for and propagate any core-specific exception during CoreContainer initialisation
-            final Throwable coreInitException = this.coreInitException.get(coreName);
+            final Throwable coreInitException = this.coreInitExceptions.get(coreName);
             if (coreInitException != null) {
                 throw new SolrServerException("Exception initializing core " + coreName, coreInitException);
             }
@@ -153,7 +158,7 @@ public abstract class SolrCoreContainer {
             // Wait for the core-initialisation to be completed
             awaitCoreInitCompletion(coreName);
             // Check for and propagate any core-specific exception during core initialisation
-            final Throwable coreInitExceptionDuringCallback = this.coreInitException.get(coreName);
+            final Throwable coreInitExceptionDuringCallback = this.coreInitExceptions.get(coreName);
             if (coreInitExceptionDuringCallback != null) {
                 throw new SolrServerException("Exception initializing core " + coreName, coreInitExceptionDuringCallback);
             }

@@ -49,7 +49,9 @@ public class SolrLibHealthIndicatorConfiguration {
 
     private final HealthAggregator healthAggregator;
 
-    public SolrLibHealthIndicatorConfiguration(SolrCoreContainer solrCoreContainer, Optional<Set<SolrCoreDescriptor>> coreDescriptors, HealthAggregator healthAggregator) {
+    public SolrLibHealthIndicatorConfiguration(SolrCoreContainer solrCoreContainer,
+                                               Optional<Set<SolrCoreDescriptor>> coreDescriptors,
+                                               HealthAggregator healthAggregator) {
         this.solrCoreContainer = solrCoreContainer;
         this.coreDescriptors = coreDescriptors.orElseGet(Collections::emptySet);
         this.healthAggregator = healthAggregator;

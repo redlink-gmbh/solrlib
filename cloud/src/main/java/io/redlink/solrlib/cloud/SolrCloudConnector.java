@@ -29,9 +29,7 @@ import org.apache.solr.common.util.NamedList;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -45,7 +43,8 @@ public class SolrCloudConnector extends SolrCoreContainer {
     public SolrCloudConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrCloudConnectorConfiguration configuration) {
         this(coreDescriptors, configuration, null);
     }
-    public SolrCloudConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrCloudConnectorConfiguration configuration, ExecutorService executorService) {
+    public SolrCloudConnector(Set<SolrCoreDescriptor> coreDescriptors, SolrCloudConnectorConfiguration configuration,
+                              ExecutorService executorService) {
         super(coreDescriptors, executorService);
 
         this.config = configuration;
@@ -53,6 +52,7 @@ public class SolrCloudConnector extends SolrCoreContainer {
     }
 
     @Override
+    @SuppressWarnings({"squid:S1141", "squid:S3776"})
     protected void init(ExecutorService executorService) throws IOException, SolrServerException {
         final Path sharedLibs = Files.createTempDirectory("solrSharedLibs");
         try (CloudSolrClient client = createSolrClient()) {
@@ -91,7 +91,8 @@ public class SolrCloudConnector extends SolrCoreContainer {
                             log.debug("Created Collection {}, CoreAdminResponse: {}", coreName, response);
                             scheduleCoreInit(executorService, coreDescriptor, true);
                         } else {
-                            log.debug("Collection {} already exists in SolrCloud '{}' as {}", coreName, config.getZkConnection(), remoteName);
+                            log.debug("Collection {} already exists in SolrCloud '{}' as {}", coreName,
+                                    config.getZkConnection(), remoteName);
                             // TODO: Check and log the response
                             final NamedList<Object> response = client.request(CollectionAdminRequest.reloadCollection(remoteName));
                             log.debug("Reloaded Collection {}, CoreAdminResponse: {}", coreName, response);
@@ -110,7 +111,9 @@ public class SolrCloudConnector extends SolrCoreContainer {
                         scheduleCoreInit(executorService, coreDescriptor, false);
                         availableCores.put(coreName, coreDescriptor);
                     } else {
-                        log.warn("Collection {} (remote: {}) not available in SolrCloud '{}' but deployCores is set to false", coreName, remoteName, config.getZkConnection());
+                        log.warn("Collection {} (remote: {}) not available in SolrCloud '{}' " +
+                                        "but deployCores is set to false",
+                                coreName, remoteName, config.getZkConnection());
                     }
                 }
             }
@@ -143,7 +146,9 @@ public class SolrCloudConnector extends SolrCoreContainer {
     }
 
     protected CloudSolrClient createSolrClient() {
-        return new CloudSolrClient.Builder(Collections.singletonList(config.getZkConnection()),Optional.empty())
+        new CloudSolrClient.Builder().build();
+        return new CloudSolrClient.Builder()
+                .withZkHost(config.getZkConnection())
                 .build();
     }
 
